@@ -96,7 +96,7 @@ jobs:
             $0 ~ "^## \\[" v "\\]" {on=1; next}
             on && /^## \[/ {exit}
             on {print}' CHANGELOG.md > notes.md
-          git archive --format=tar.gz --prefix="gardiner-lab-suite/" \
-            -o "gardiner-lab-suite-$version.tar.gz" "$GITHUB_REF_NAME"
-          gh release create "$GITHUB_REF_NAME" "gardiner-lab-suite-$version.tar.gz" \
+          git archive --format=tar.gz --prefix="Trellis-Tools/" \
+            -o "Trellis-Tools-$version.tar.gz" "$GITHUB_REF_NAME"
+          gh release create "$GITHUB_REF_NAME" "Trellis-Tools-$version.tar.gz" \
             --title "Trellis Tools $version" --notes-file notes.md

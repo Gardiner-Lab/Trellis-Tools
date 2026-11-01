@@ -78,7 +78,7 @@ EOF
 fail() {
     log "FAILED: $*"
     write_status "failed" "$*"
-    [ -n "${NOTIFY_URL:-}" ] && wget -q -O- --post-data="{\"text\":\"Lab suite backup FAILED: $*\"}" \
+    [ -n "${NOTIFY_URL:-}" ] && wget -q -O- --post-data="{\"text\":\"Trellis Tools backup FAILED: $*\"}" \
         --header='Content-Type: application/json' "$NOTIFY_URL" >/dev/null 2>&1
     rm -rf "$STAGING"
     exit 1
@@ -245,7 +245,7 @@ if [ -n "$SHARE" ]; then
     write_status "ok" "$REMAINING archive(s) held" "$NAME.tar.gz"
     rm -rf "$DEST"
     [ -n "${NOTIFY_ON_SUCCESS:-}" ] && [ -n "${NOTIFY_URL:-}" ] && \
-        wget -q -O- --post-data="{\"text\":\"Lab suite backup ok: $NAME.tar.gz ($SIZE)\"}" \
+        wget -q -O- --post-data="{\"text\":\"Trellis Tools backup ok: $NAME.tar.gz ($SIZE)\"}" \
             --header='Content-Type: application/json' "$NOTIFY_URL" >/dev/null 2>&1
     exit 0
 fi
@@ -309,6 +309,6 @@ log "backup complete: $REMAINING archive(s) held, $(df -h "$DEST" | awk 'NR==2 {
 write_status "ok" "$REMAINING archive(s) held" "$NAME.tar.gz"
 
 [ -n "${NOTIFY_ON_SUCCESS:-}" ] && [ -n "${NOTIFY_URL:-}" ] && \
-    wget -q -O- --post-data="{\"text\":\"Lab suite backup ok: $NAME.tar.gz ($SIZE)\"}" \
+    wget -q -O- --post-data="{\"text\":\"Trellis Tools backup ok: $NAME.tar.gz ($SIZE)\"}" \
         --header='Content-Type: application/json' "$NOTIFY_URL" >/dev/null 2>&1
 exit 0

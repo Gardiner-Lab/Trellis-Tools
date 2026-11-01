@@ -27,13 +27,13 @@ the Plasmid Editor is updated in the MoClo tool as well.
 You need Docker with the compose plugin. On the server:
 
 ```bash
-git clone https://github.com/Gardiner-Lab/gardiner-lab-suite.git
-cd gardiner-lab-suite
+git clone https://github.com/Gardiner-Lab/Trellis-Tools.git
+cd Trellis-Tools
 ./install.sh
 ```
 
-No git? Download `gardiner-lab-suite-<version>.tar.gz` from the
-[latest release](https://github.com/Gardiner-Lab/gardiner-lab-suite/releases/latest),
+No git? Download `Trellis-Tools-<version>.tar.gz` from the
+[latest release](https://github.com/Gardiner-Lab/Trellis-Tools/releases/latest),
 unpack it, and run `./install.sh` inside.
 
 It shows what it is about to do, asks once, and finishes with the address to
@@ -127,7 +127,7 @@ Three repositories, under the Gardiner-Lab organisation on GitHub:
 | --- | --- |
 | [moclo-library-tool](https://github.com/Gardiner-Lab/moclo-library-tool) | `ghcr.io/gardiner-lab/moclo-library-tool` |
 | [plasmid-editor](https://github.com/Gardiner-Lab/plasmid-editor) | `ghcr.io/gardiner-lab/plasmid-editor` |
-| gardiner-lab-suite (this one) | `ghcr.io/gardiner-lab/lab-suite-backup`, and the release people install |
+| Trellis-Tools (this one) | `ghcr.io/gardiner-lab/lab-suite-backup`, and the release people install |
 
 Each tool releases on its own: pushing a `vX.Y.Z` tag in its repository tests it
 and publishes its image. People get it through a suite release:
