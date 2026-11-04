@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.26.0] - 2026-11-04
+
+Pins Lab Stocks 0.15.0.
+
+### Added
+- Lab Stocks 0.15.0: **sharing stock lists between labs.** A lab's lead or lab admin can share one list —
+  glycerol stocks, primers, chemicals, antibodies or plant material — or all of them, with another lab or with
+  its own chair group, to see or to change; an administrator can turn on sharing for a whole chair group, which
+  stacks with per-lab shares. A shared stock still belongs to the lab that made it (eLab is still sent by that
+  lab); edits are kept in its history and a delete is a soft delete, so a shared lab's changes are recorded and
+  recoverable. **Share stocks…** on each list opens the dialog, for a lab's lead, lab admin or an administrator.
+
 ## [2.25.0] - 2026-10-31
 
 Pins Plasmid Editor 0.20.0.
