@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.29.1] - 2026-11-04
+
+Pins Lab Stocks 0.18.1.
+
+### Fixed
+- Lab Stocks 0.18.1: a sample brought over into another lab is linked to the sample it came from -
+  without it those came over loose, and the next lab to connect would have copied them into eLab again.
+  Everyone who may see a stock now also sees where it is in eLab, rather than only the lab that owns it.
+
 ## [2.29.0] - 2026-11-04
 
 Pins Lab Stocks 0.18.0.
