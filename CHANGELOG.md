@@ -8,6 +8,19 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.29.0] - 2026-11-04
+
+Pins Lab Stocks 0.18.0.
+
+### Added
+- Lab Stocks 0.18.0: a sample brought over from a shared eLab group becomes the stock of the lab
+  whoever made it belongs to, rather than always the lab doing the bringing over. Who belongs where is
+  kept and can be set; an owner nobody has placed stays with the connecting lab, credited to the
+  administrator.
+- Lab Stocks 0.17.0: a kind can be kept in several of eLab's sample types, so a MoClo kit filed under
+  its own type comes over as glycerol stocks; and a stock is no longer copied into eLab a second time
+  when the group already holds that plasmid under its own name.
+
 ## [2.28.0] - 2026-11-04
 
 Pins Lab Notebook 0.21.0 and Lab Stocks 0.16.0.
