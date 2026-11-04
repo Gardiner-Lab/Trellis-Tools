@@ -8,6 +8,31 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.28.0] - 2026-11-04
+
+Pins Lab Notebook 0.21.0 and Lab Stocks 0.16.0.
+
+### Added
+- Lab Stocks 0.15.0 and 0.16.0: **sharing stock lists between labs.** A lab's lead or lab admin can share one
+  list — glycerol stocks, primers, chemicals, antibodies or plant material — or all of them, with another lab,
+  with its own chair group, or with any other chair group, to see or to change; an administrator can turn on
+  sharing for a whole chair group, which stacks with per-lab shares. A shared stock still belongs to the lab that
+  made it (eLab is still sent by that lab); edits are kept in its history and a delete is a soft delete, so a
+  shared lab's changes are recorded and recoverable. **Share stocks…** on each list opens the dialog, for a lab's
+  lead, lab admin or an administrator, who is asked which lab if they are in none.
+- Lab Notebook 0.21.0: **steps can be moved.** Drag the ⋮⋮ at the left of a step, or press Alt+↑ / Alt+↓ in it;
+  a step keeps its tick.
+- Lab Notebook 0.21.0: **＋ Add to page…** on a protocol, and in the library, adds it as a page of its own under
+  today's day (the first choice) or any page you may add to, instead of more content in the day; its version is
+  recorded and listed under the protocol's *Used on*.
+- Lab Notebook 0.21.0: **a mistaken year, month or day can be deleted** (a year typed as 6, or 6202), with the
+  days under it, and brought back from Deleted. One with a booking on it is kept until the booking is
+  cancelled, and a deleted day cannot come back beside a new one for the same date.
+
+### Fixed
+- Lab Notebook 0.21.0: the buttons above a page wrap inside it in a narrow window, instead of being squeezed so
+  their names broke over two lines.
+
 ## [2.27.0] - 2026-11-04
 
 Pins Plasmid Editor 0.20.1.
