@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.27.0] - 2026-11-04
+
+Pins Plasmid Editor 0.20.1.
+
+### Changed
+- Four of the Plasmid Editor now run at once rather than one, set with **`EDITOR_WORKERS`** in `.env`
+  (default 4; 1 restores the old behaviour). It is the one tool that does real arithmetic in a
+  request, and a single worker served one of those at a time while everyone else waited. Measured
+  with 20 people at once and a 60 kb plasmid scanned against every REBASE enzyme in the mix:
+  ordinary pages went from 3.9 s to 0.5 s at the 95th percentile, and saving from 7.3 s to 1.1 s.
+  About 65 MB per worker. The other tools are unchanged: none of them compute in a request.
+
 ## [2.26.0] - 2026-11-04
 
 Pins Lab Stocks 0.15.0.
