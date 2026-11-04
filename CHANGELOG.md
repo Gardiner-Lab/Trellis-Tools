@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.30.0] - 2026-11-04
+
+Pins Lab Stocks 0.19.0.
+
+### Added
+- **Which lab each eLab owner belongs to** is now a tab of the dashboard, under Administration: a
+  shared eLab group holds several labs' samples, and this says whose stock each becomes when it is
+  brought over. Until now the list could only be set through the API.
+
 ## [2.29.1] - 2026-11-04
 
 Pins Lab Stocks 0.18.1.

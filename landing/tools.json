@@ -85,6 +85,7 @@
         "Copied to eLabJournal's inventory and storage; labels with QR codes, links from the notebook"
       ],
       "health": "/stocks/health",
+      "manifest": "/stocks/suite-manifest.json",
       "status": "live"
     },
     {
