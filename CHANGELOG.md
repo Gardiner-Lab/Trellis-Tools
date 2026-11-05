@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.30.1] - 2026-11-05
+
+Pins Lab Notebook 0.21.1.
+
+### Added
+- Lab Notebook 0.21.1: a line begun with "- " becomes a bulleted list as the next character is typed.
+
+### Fixed
+- Lab Notebook 0.21.1: the day box beside **Start today** takes the day as dd-mm-yyyy, whatever the browser's
+  language; it was the browser's own date box, which often asked for yyyy-mm-dd. A calendar button beside it
+  picks a day as before.
+
 ## [2.30.0] - 2026-11-04
 
 Pins Lab Stocks 0.19.0.
