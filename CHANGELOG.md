@@ -10,7 +10,7 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [2.32.0] - 2026-11-05
 
-Pins Lab Stocks 0.20.0 and Seed Bank 0.12.0.
+Pins Lab Stocks 0.20.0, Seed Bank 0.12.0 and Lab Notebook 0.22.0.
 
 ### Added
 - **A label of the lab's own.** The labels pages offer LabTAG's labels; a roll the lab buys that is not
@@ -27,6 +27,16 @@ Pins Lab Stocks 0.20.0 and Seed Bank 0.12.0.
 - **An LWCS label asked DYMO Connect for the wrong template.** Each LWCS label copies the DY4 label of
   its size and took that label's DYMO stock with it, so LWCS-506 asked for a 56 × 94 mm shipping label
   for a 33 mm label. A roll now names no stock unless one has been recorded for it.
+- **DYMO Connect read the spreadsheet as one column** on a computer whose programs separate with a
+  semicolon rather than a comma, as Dutch, German and French ones do. It is now written with the
+  separator this computer uses, and the labels page offers the other one.
+- Lab Notebook 0.22.0: **a lab admin's notebook is their own.** Leading a lab opens the notebooks of
+  its members, as it should, but it opened the other lab admins' too, each being a member of the lab.
+  An administrator of the suite still reads every notebook, and a lab admin who has left is read by
+  the lab's remaining ones, so their work is not lost with them.
+- Lab Notebook 0.22.0: **the formatting bar was out of reach in a long text section**, sitting above
+  the top of the screen once the section had scrolled, so headings and bullets could not be used
+  there. It stays in sight while you write.
 
 ## [2.31.0] - 2026-11-05
 

@@ -177,7 +177,7 @@ services:
   # the account directory and MoClo's saved assemblies, the editor's plasmids
   # and the suite's labs, and writes only to its own volume.
   notebook:
-    image: ghcr.io/gardiner-lab/lab-notebook:${NOTEBOOK_VERSION:-0.21.2}
+    image: ghcr.io/gardiner-lab/lab-notebook:${NOTEBOOK_VERSION:-0.22.0}
     container_name: lab-notebook
     depends_on:
       moclo:
