@@ -50,7 +50,7 @@ from flask import Flask, jsonify, make_response, redirect, request, send_file, s
 import directory
 import labs
 
-APP_VERSION = '2.31.0'
+APP_VERSION = '2.32.0'
 
 # The first administrator's password on a new installation (MoClo creates
 # 'admin' with it). It is published, so it may be used once only: whoever
@@ -474,6 +474,69 @@ def change_password():
         start_session(directory.set_password(account['username'], new))
     except (ValueError, LookupError) as exc:
         return jsonify({'error': str(exc)}), 400
+    return jsonify({'ok': True})
+
+
+# ---------------------------------------------------------------------------
+# Label stock the lab buys itself
+# ---------------------------------------------------------------------------
+# The labels pages of Lab Stocks and the Seed Bank offer LabTAG's labels, which are in
+# their own code. A lab that buys another roll measures it once here and everyone can
+# then print on it. Anyone signed in may add one: whoever has the new roll in hand is
+# the one who knows its size, and a wrong entry is corrected rather than dangerous.
+
+def _label_stock_request():
+    """The person, or the answer to send back when there is nobody signed in."""
+    account = signed_in_account()
+    if account is None:
+        return None, (jsonify({'error': 'Sign in first'}), 401)
+    return account, None
+
+
+@app.route('/api/label-stocks')
+def list_label_stocks():
+    """Every label the lab has measured. Read by the labels page of each tool."""
+    _, refused = _label_stock_request()
+    if refused:
+        return refused
+    return jsonify({'label_stocks': labs.label_stocks()})
+
+
+@app.route('/api/label-stocks', methods=['POST'])
+def add_label_stock():
+    account, refused = _label_stock_request()
+    if refused:
+        return refused
+    try:
+        stock = labs.create_label_stock(json_body() or {}, account['username'])
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    return jsonify({'label_stock': stock})
+
+
+@app.route('/api/label-stocks/<stock_id>', methods=['PATCH'])
+def change_label_stock(stock_id):
+    _, refused = _label_stock_request()
+    if refused:
+        return refused
+    try:
+        stock = labs.update_label_stock(stock_id, json_body() or {})
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    except LookupError as exc:
+        return jsonify({'error': str(exc)}), 404
+    return jsonify({'label_stock': stock})
+
+
+@app.route('/api/label-stocks/<stock_id>', methods=['DELETE'])
+def remove_label_stock(stock_id):
+    _, refused = _label_stock_request()
+    if refused:
+        return refused
+    try:
+        labs.delete_label_stock(stock_id)
+    except LookupError as exc:
+        return jsonify({'error': str(exc)}), 404
     return jsonify({'ok': True})
 
 

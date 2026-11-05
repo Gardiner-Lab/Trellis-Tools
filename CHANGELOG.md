@@ -8,6 +8,26 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.32.0] - 2026-11-05
+
+Pins Lab Stocks 0.20.0 and Seed Bank 0.12.0.
+
+### Added
+- **A label of the lab's own.** The labels pages offer LabTAG's labels; a roll the lab buys that is not
+  among them is now measured once — the tag, the spot or cap beside it, and the gap — and is offered to
+  everyone, in both Lab Stocks and the Seed Bank. Anyone signed in may add, change or remove one, from
+  the pencil beside the label picker. The suite keeps them (`label_stocks` in its own database), so they
+  are the same for everybody rather than kept in one browser.
+
+### Fixed
+- **The spreadsheet for DYMO Connect's Import data lost every column after the first**, `Cap1` among
+  them: a sticker's lines of text sat in one cell with line breaks inside the quotes, and DYMO Connect
+  reads a line break as the end of the row whatever the quotes. Each line of a sticker is now a column
+  of its own, and a row is one line of the file.
+- **An LWCS label asked DYMO Connect for the wrong template.** Each LWCS label copies the DY4 label of
+  its size and took that label's DYMO stock with it, so LWCS-506 asked for a 56 × 94 mm shipping label
+  for a 33 mm label. A roll now names no stock unless one has been recorded for it.
+
 ## [2.31.0] - 2026-11-05
 
 Pins Sequence Editor 0.21.0, MoClo 1.19.1, Lab Notebook 0.21.2, Seed Bank 0.11.1, Lab Stocks 0.19.1.

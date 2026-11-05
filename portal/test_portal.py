@@ -958,3 +958,65 @@ def test_the_icons_are_served_to_anyone(portal):
         assert res.status_code == 200 and res.mimetype == 'image/svg+xml' and b'<svg' in res.data, name
     for bad in ('nope', '..%2Fportal', 'Moclo', 'a' * 40):
         assert client.get(f'/icons/{bad}.svg').status_code == 404, bad
+
+
+# ---------------------------------------------------------------------------
+# Label stock the lab buys itself
+# ---------------------------------------------------------------------------
+
+CRYO_TAG = {'name': 'Cryo-Tag 38 mm', 'tag_w': 38.1, 'tag_h': 12.7, 'spot': 9.5, 'gap': 5}
+
+
+def test_a_label_the_lab_measured_is_offered_to_everyone(portal):
+    """Anyone signed in adds one, and everyone's labels page then sees it."""
+    module, client, _ = portal
+    sign_in(client, 'alice', 'alice-password')
+    assert client.get('/api/label-stocks').get_json()['label_stocks'] == []
+    made = client.post('/api/label-stocks', json=CRYO_TAG)
+    assert made.status_code == 200
+    stock = made.get_json()['label_stock']
+    assert stock['name'] == 'Cryo-Tag 38 mm' and stock['tag_w'] == 38.1 and stock['spot'] == 9.5
+    assert stock['created_by'] == 'alice'
+    assert stock['dymo_label'] == '', 'no DYMO stock named until somebody knows it'
+    # Another member, who did not add it, is offered it just the same.
+    other = module.app.test_client()
+    sign_in(other, 'boss', 'boss-password')
+    assert [s['name'] for s in other.get('/api/label-stocks').get_json()['label_stocks']] == ['Cryo-Tag 38 mm']
+
+
+def test_a_label_is_changed_and_removed(portal):
+    _, client, _ = portal
+    sign_in(client, 'alice', 'alice-password')
+    stock = client.post('/api/label-stocks', json=CRYO_TAG).get_json()['label_stock']
+    changed = client.patch(f"/api/label-stocks/{stock['id']}", json={**CRYO_TAG, 'dymo_label': 'Small30336'})
+    assert changed.status_code == 200 and changed.get_json()['label_stock']['dymo_label'] == 'Small30336'
+    assert client.delete(f"/api/label-stocks/{stock['id']}").status_code == 200
+    assert client.get('/api/label-stocks').get_json()['label_stocks'] == []
+    for gone in (client.patch(f"/api/label-stocks/{stock['id']}", json=CRYO_TAG),
+                 client.delete(f"/api/label-stocks/{stock['id']}")):
+        assert gone.status_code == 404
+
+
+def test_a_label_needs_a_name_of_its_own_and_sizes_that_could_be_a_label(portal):
+    _, client, _ = portal
+    sign_in(client, 'alice', 'alice-password')
+    client.post('/api/label-stocks', json=CRYO_TAG)
+    for bad, says in (
+            ({**CRYO_TAG, 'name': ''}, 'name'),
+            ({**CRYO_TAG, 'name': 'cryo-tag 38 MM'}, 'already'),          # the same name, cased differently
+            ({**CRYO_TAG, 'name': 'Nothing wide', 'tag_w': 0}, 'tag w'),
+            ({**CRYO_TAG, 'name': 'Huge', 'tag_w': 5000}, 'tag w'),
+            ({**CRYO_TAG, 'name': 'Wordy', 'tag_h': 'wide'}, 'tag h'),
+            ({**CRYO_TAG, 'name': 'Sideways', 'orientation': 'Diagonal'}, 'Orientation')):
+        res = client.post('/api/label-stocks', json=bad)
+        assert res.status_code == 400 and says in res.get_json()['error'], bad
+    assert len(client.get('/api/label-stocks').get_json()['label_stocks']) == 1
+    # A spot of 0 is a label with none, which is allowed where a tag of 0 is not.
+    assert client.post('/api/label-stocks', json={**CRYO_TAG, 'name': 'Plain tag', 'spot': 0}).status_code == 200
+
+
+def test_labels_are_for_people_who_have_signed_in(portal):
+    _, client, _ = portal
+    for res in (client.get('/api/label-stocks'), client.post('/api/label-stocks', json=CRYO_TAG),
+                client.patch('/api/label-stocks/whatever', json=CRYO_TAG), client.delete('/api/label-stocks/whatever')):
+        assert res.status_code == 401

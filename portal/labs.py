@@ -62,6 +62,23 @@ CREATE TABLE IF NOT EXISTS chair_groups (
     created_by TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- Label stock the lab buys that is not in the tools' own list (LabTAG's), measured
+-- once by whoever has the roll and then printed on by everyone: the tag, the spot or
+-- cap beside it (0 for none), the gap between them, all in millimetres, and what DYMO
+-- Connect calls the roll, where that is known. Lab Stocks and the Seed Bank read this
+-- table; the labels page writes it.
+CREATE TABLE IF NOT EXISTS label_stocks (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    tag_w REAL NOT NULL,
+    tag_h REAL NOT NULL,
+    spot REAL NOT NULL DEFAULT 0,
+    gap REAL NOT NULL DEFAULT 0,
+    dymo_label TEXT NOT NULL DEFAULT '',
+    orientation TEXT NOT NULL DEFAULT 'Landscape',
+    created_by TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 -- Who is in which lab, and who leads it. By username, the directory's key.
 -- Administrators are the directory's own (MoClo's users.is_admin).
 CREATE TABLE IF NOT EXISTS members (
@@ -345,6 +362,92 @@ def delete_chair_group(group_id: str) -> None:
         conn.execute('UPDATE labs SET chair_group_id = NULL WHERE chair_group_id = ?', (group_id,))
         if conn.execute('DELETE FROM chair_groups WHERE id = ?', (group_id,)).rowcount == 0:
             raise LookupError('No such chair group')
+
+
+# ---------------------------------------------------------------------------
+# Label stock the lab buys itself
+# ---------------------------------------------------------------------------
+
+# The tools' own list covers LabTAG's labels. A lab that buys another roll measures it
+# once here, and both Lab Stocks and the Seed Bank offer it to everyone. Millimetres,
+# because that is what a ruler and a supplier's page give.
+MAX_LABEL_MM = 300
+
+
+def label_stocks() -> List[dict]:
+    """Every label the lab has measured, in the order they are offered."""
+    with connect() as conn:
+        return [dict(r) for r in conn.execute('SELECT * FROM label_stocks ORDER BY name COLLATE NOCASE')]
+
+
+def _label_fields(fields: dict, other_than: Optional[str] = None) -> dict:
+    """What a label stock holds, checked: a name of its own, and sizes a label could have."""
+    name = _clean(fields.get('name') or '')
+    if not name:
+        raise ValueError('Give the label a name')
+    if len(name) > MAX_NAME_LENGTH:
+        raise ValueError(f'A label name must be at most {MAX_NAME_LENGTH} characters')
+    with connect() as conn:
+        taken = conn.execute('SELECT id FROM label_stocks WHERE name = ? COLLATE NOCASE', (name,)).fetchone()
+    if taken and taken['id'] != other_than:
+        raise ValueError(f'There is already a label called "{name}"')
+
+    def size(key: str, least: float) -> float:
+        raw = fields.get(key)
+        try:
+            value = round(float(raw), 2)
+        except (TypeError, ValueError):
+            raise ValueError(f'{key.replace("_", " ")}: give a size in millimetres') from None
+        if value < least or value > MAX_LABEL_MM:
+            raise ValueError(f'{key.replace("_", " ")}: a size from {least} to {MAX_LABEL_MM} mm')
+        return value
+
+    orientation = _clean(fields.get('orientation') or 'Landscape')
+    if orientation not in ('Portrait', 'Landscape'):
+        raise ValueError('Orientation is Portrait or Landscape')
+    dymo_label = _clean(fields.get('dymo_label') or '')
+    if len(dymo_label) > MAX_NAME_LENGTH:
+        raise ValueError(f'A DYMO label name must be at most {MAX_NAME_LENGTH} characters')
+    return {
+        'name': name,
+        'tag_w': size('tag_w', 1),          # the printed part: at least a millimetre
+        'tag_h': size('tag_h', 1),
+        'spot': size('spot', 0),            # the cap or spot beside it; 0 when there is none
+        'gap': size('gap', 0),
+        'dymo_label': dymo_label,
+        'orientation': orientation,
+    }
+
+
+def create_label_stock(fields: dict, by: str) -> dict:
+    checked = _label_fields(fields)
+    stock_id = str(uuid.uuid4())
+    with connect() as conn:
+        conn.execute(
+            'INSERT INTO label_stocks (id, name, tag_w, tag_h, spot, gap, dymo_label, orientation, created_by) '
+            'VALUES (:id, :name, :tag_w, :tag_h, :spot, :gap, :dymo_label, :orientation, :by)',
+            {**checked, 'id': stock_id, 'by': by})
+    return next(s for s in label_stocks() if s['id'] == stock_id)
+
+
+def update_label_stock(stock_id: str, fields: dict) -> dict:
+    with connect() as conn:
+        if not conn.execute('SELECT 1 FROM label_stocks WHERE id = ?', (stock_id,)).fetchone():
+            raise LookupError('No such label')
+    checked = _label_fields(fields, stock_id)
+    with connect() as conn:
+        conn.execute(
+            'UPDATE label_stocks SET name = :name, tag_w = :tag_w, tag_h = :tag_h, spot = :spot, '
+            'gap = :gap, dymo_label = :dymo_label, orientation = :orientation WHERE id = :id',
+            {**checked, 'id': stock_id})
+    return next(s for s in label_stocks() if s['id'] == stock_id)
+
+
+def delete_label_stock(stock_id: str) -> None:
+    """The label goes from the list. Anything already printed on it is unaffected."""
+    with connect() as conn:
+        if conn.execute('DELETE FROM label_stocks WHERE id = ?', (stock_id,)).rowcount == 0:
+            raise LookupError('No such label')
 
 
 def set_chair_group(lab_id: str, group_id: Optional[str]) -> None:
