@@ -59,7 +59,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.33.0}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.34.0}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -318,13 +318,13 @@ services:
 
   # The genome browser, at /genome/: reference genomes, coverage and feature
   # tracks (BigWig/BED/GFF), and igv.js views, with links to plasmids, parts
-  # and notebook pages. Unlike the other tools it has no published image yet,
-  # so it is built here from ./genome. It reads the account directory and
+  # and notebook pages. Built from ./genome in this repo and published as
+  # lab-suite-genome. It reads the account directory and
   # labs, the editor's plasmids and the Seed Bank's lines, and writes only to
   # its own volume. The web container accepts uploads and enqueues conversion
   # jobs; the heavy toolchain runs in the separate genome-worker below.
   genome-browser:
-    build: ./genome
+    image: ghcr.io/gardiner-lab/lab-suite-genome:${SUITE_VERSION:-2.34.0}
     container_name: lab-genome
     depends_on:
       moclo:
@@ -365,7 +365,7 @@ services:
   # toolchain never ties up the web workers, and so these tight CPU and memory
   # limits apply to conversion alone.
   genome-worker:
-    build: ./genome
+    image: ghcr.io/gardiner-lab/lab-suite-genome:${SUITE_VERSION:-2.34.0}
     container_name: lab-genome-worker
     command: ["python", "worker.py"]
     depends_on:
@@ -417,7 +417,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.33.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.34.0}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -452,7 +452,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.33.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.34.0}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -487,7 +487,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.33.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.34.0}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:

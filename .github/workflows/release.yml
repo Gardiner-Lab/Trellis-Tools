@@ -30,7 +30,7 @@ jobs:
       - name: Check versions
         run: |
           version="${GITHUB_REF_NAME#v}"
-          for service in backup portal; do
+          for service in backup portal genome; do
             grep -q "lab-suite-$service:\${SUITE_VERSION:-$version}" docker-compose.yml \
               || { echo "docker-compose.yml does not pin lab-suite-$service to $version"; exit 1; }
           done
@@ -86,6 +86,20 @@ jobs:
           tags: ${{ steps.portal-meta.outputs.tags }}
           labels: ${{ steps.portal-meta.outputs.labels }}
 
+      - id: genome-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/gardiner-lab/lab-suite-genome
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./genome
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.genome-meta.outputs.tags }}
+          labels: ${{ steps.genome-meta.outputs.labels }}
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}

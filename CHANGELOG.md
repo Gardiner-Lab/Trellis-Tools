@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.34.0] - 2026-11-05
+Publishes the Genome Browser as a prebuilt image; pins lab-suite-portal, lab-suite-backup and
+lab-suite-genome 2.34.0.
+
+### Changed
+- The Genome Browser now ships as a published multi-architecture image
+  (`ghcr.io/gardiner-lab/lab-suite-genome`, amd64 and arm64), pulled and pinned like the other suite
+  services, rather than built on each server. `install.sh` pulls it with the rest; a server without
+  the published image yet still builds it from `./genome` through the local overlay. The conversion
+  toolchain (samtools, bedtools, deepTools and the UCSC utilities) is baked into the image per
+  architecture, with the UCSC binaries verified against pinned checksums at build time.
+
 ## [2.33.0] - 2026-11-05
 Adds the Genome Browser, and pins lab-suite-portal and lab-suite-backup 2.33.0.
 

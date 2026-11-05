@@ -255,7 +255,8 @@ for name in lab-proxy lab-portal moclo-library-tool plasmid-editor lab-backup la
 done
 
 step "The plan"
-info "Install the suite (landing page, MoClo Library Tool, Sequence Editor, backups)"
+info "Install the suite (landing page, MoClo Library Tool, Sequence Editor,"
+info "Genome Browser, backups)"
 info "and serve it at https://$(hostname):$PORT/"
 if [ -n "$SRC" ]; then
     info "Take over the existing MoClo:"
@@ -366,13 +367,14 @@ PORT="$(grep -E '^SUITE_PORT=' .env | cut -d= -f2-)"; PORT="${PORT:-8080}"
 answers() { curl -sfk "$1" >/dev/null 2>&1 || wget -q --no-check-certificate -O /dev/null "$1" 2>/dev/null; }
 healthy=0
 for _ in $(seq 1 60); do
-    if answers "https://localhost:$PORT/health" && answers "https://localhost:$PORT/editor/health"; then
+    if answers "https://localhost:$PORT/health" && answers "https://localhost:$PORT/editor/health" \
+       && answers "https://localhost:$PORT/genome/health"; then
         healthy=1; break
     fi
     sleep 2
 done
 [ "$healthy" = 1 ] || { compose ps; die "the tools did not come up within two minutes; see 'docker compose logs'"; }
-ok "MoClo Library Tool and Sequence Editor are answering"
+ok "MoClo Library Tool, Sequence Editor and Genome Browser are answering"
 
 # Which password the admin account has now: the one in .env, the lab's own,
 # or the starting default, to be changed at the first sign-in.

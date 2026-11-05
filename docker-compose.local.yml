@@ -1,6 +1,7 @@
 # Build images from source instead of pulling the published ones: the MoClo
 # Library Tool and the Sequence Editor from working copies, and the sign-in and
-# backup services from ./portal and ./backup. Used before
+# backup services from ./portal and ./backup, and the genome browser from
+# ./genome. Used before
 # a release, for testing a change against the stack, and by install.sh while an
 # image has not been published yet.
 #
@@ -50,6 +51,18 @@ services:
     build:
       context: ${BOOKING_SRC:-../lab-booking}
     image: lab-booking:local
+    pull_policy: never
+
+  # The genome browser is built from ./genome in this repo (not a sibling
+  # checkout), both the web service and the worker from the one image.
+  genome-browser:
+    build: ./genome
+    image: lab-suite-genome:local
+    pull_policy: never
+
+  genome-worker:
+    build: ./genome
+    image: lab-suite-genome:local
     pull_policy: never
 
   backup:
