@@ -50,7 +50,7 @@ from flask import Flask, jsonify, make_response, redirect, request, send_file, s
 import directory
 import labs
 
-APP_VERSION = '2.32.0'
+APP_VERSION = '2.33.0'
 
 # The first administrator's password on a new installation (MoClo creates
 # 'admin' with it). It is published, so it may be used once only: whoever
@@ -174,7 +174,7 @@ def managed_labs(account, role, at_least='lab_lead') -> set:
 
 # What anyone may reach without signing in, besides this service itself: the
 # tools' health checks, for monitoring. They say "healthy" and nothing more.
-PUBLIC_PATHS = frozenset({'/health', '/editor/health', '/notebook/health', '/seeds/health', '/stocks/health', '/booking/health', '/backup/health'})
+PUBLIC_PATHS = frozenset({'/health', '/editor/health', '/notebook/health', '/seeds/health', '/stocks/health', '/booking/health', '/genome/health', '/backup/health'})
 
 
 def requested_path() -> str:

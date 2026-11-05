@@ -42,6 +42,7 @@ services:
       - seeds
       - stocks
       - booking
+      - genome-browser
       - backup-console
     restart: unless-stopped
     healthcheck:
@@ -58,7 +59,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.32.0}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.33.0}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -226,6 +227,9 @@ services:
       - suite-data:/suite:ro
       # Glycerol stocks, for a family tree (plasmid -> stocks -> lines -> seeds).
       - stocks-data:/stocks:ro
+      # Genome browser's seed_stock_tags, read for a line's/plant's family tree
+      # (its genome.db, read-only; see genome/CONTRACT_seed_stock_tags.md).
+      - genome-data:/genome:ro
     environment:
       # Opens Word, PowerPoint and Excel attachments in the browser, as PDFs.
       - CONVERTER_URL=http://converter:3000
@@ -312,6 +316,86 @@ services:
     expose:
       - "5007"
 
+  # The genome browser, at /genome/: reference genomes, coverage and feature
+  # tracks (BigWig/BED/GFF), and igv.js views, with links to plasmids, parts
+  # and notebook pages. Unlike the other tools it has no published image yet,
+  # so it is built here from ./genome. It reads the account directory and
+  # labs, the editor's plasmids and the Seed Bank's lines, and writes only to
+  # its own volume. The web container accepts uploads and enqueues conversion
+  # jobs; the heavy toolchain runs in the separate genome-worker below.
+  genome-browser:
+    build: ./genome
+    container_name: lab-genome
+    depends_on:
+      moclo:
+        condition: service_healthy
+    volumes:
+      - genome-data:/genome
+      - suite-data:/suite:ro
+      - moclo-data:/moclo:ro
+      - editor-data:/editor:ro
+      - seeds-data:/seeds:ro
+    environment:
+      - URL_PREFIX=/genome
+      - SUITE_HOME_URL=/
+      - SUITE_LOGIN_URL=/account/login
+      - SUITE_LOGOUT_URL=/account/logout
+      # Signed in by the suite, as the other tools are.
+      - SUITE_AUTH=proxy
+      - NOTEBOOK_URL=/notebook
+      - MOCLO_URL=/
+      - EDITOR_URL=/editor
+      - SEEDS_URL=/seeds
+      - SUITE_DATABASE_PATH=/suite/suite.db
+      - MOCLO_DB=/moclo/moclo.db
+      # The largest BAM an upload may be, in GB; checked before any job starts.
+      - MAX_BAM_GB=${MAX_BAM_GB:-50}
+      # A conversion only starts with at least this much free disk, in GB.
+      - CONVERT_MIN_FREE_GB=${CONVERT_MIN_FREE_GB:-50}
+      # How many threads samtools sort may use during a conversion.
+      - SAMTOOLS_THREADS=${SAMTOOLS_THREADS:-2}
+    restart: unless-stopped
+    expose:
+      - "5008"
+
+  # The conversion worker: the same image as genome-browser, run with a
+  # different command (python worker.py). It is the single process that turns
+  # uploaded BAM/wig files into BigWig, pulling jobs from the shared SQLite
+  # queue on genome-data; concurrency is one. Kept separate so the heavy
+  # toolchain never ties up the web workers, and so these tight CPU and memory
+  # limits apply to conversion alone.
+  genome-worker:
+    build: ./genome
+    container_name: lab-genome-worker
+    command: ["python", "worker.py"]
+    depends_on:
+      moclo:
+        condition: service_healthy
+    volumes:
+      - genome-data:/genome
+      - suite-data:/suite:ro
+      - moclo-data:/moclo:ro
+      - editor-data:/editor:ro
+      - seeds-data:/seeds:ro
+    environment:
+      - URL_PREFIX=/genome
+      - SUITE_HOME_URL=/
+      - SUITE_LOGIN_URL=/account/login
+      - SUITE_LOGOUT_URL=/account/logout
+      - SUITE_AUTH=proxy
+      - NOTEBOOK_URL=/notebook
+      - MOCLO_URL=/
+      - EDITOR_URL=/editor
+      - SEEDS_URL=/seeds
+      - SUITE_DATABASE_PATH=/suite/suite.db
+      - MOCLO_DB=/moclo/moclo.db
+      - MAX_BAM_GB=${MAX_BAM_GB:-50}
+      - CONVERT_MIN_FREE_GB=${CONVERT_MIN_FREE_GB:-50}
+      - SAMTOOLS_THREADS=${SAMTOOLS_THREADS:-2}
+    cpus: "2.0"
+    mem_limit: 6g
+    restart: unless-stopped
+
   # The file converter: LibreOffice, turning Word, PowerPoint and Excel
   # attachments into PDFs so the notebook, the Seed Bank and Lab Stocks can
   # show them in the browser. Only those three reach it, on a network of its
@@ -333,7 +417,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.32.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.33.0}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -368,7 +452,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.32.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.33.0}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -403,7 +487,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.32.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.33.0}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:
@@ -440,6 +524,9 @@ volumes:
   stocks-data:
   # Booking: rooms and equipment, and their bookings.
   booking-data:
+  # The genome browser: reference genomes, tracks (BigWig/BED/GFF), and the
+  # conversion scratch and job database.
+  genome-data:
   # Backup settings chosen in the console, shared by the console, the
   # scheduler and the restore service.
   backup-config:

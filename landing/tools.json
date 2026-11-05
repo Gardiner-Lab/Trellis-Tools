@@ -105,6 +105,23 @@
       "health": "/booking/health",
       "status": "live",
       "manifest": "/booking/suite-manifest.json"
+    },
+    {
+      "id": "genome",
+      "name": "Genome Browser",
+      "icon": "🧫",
+      "image": "/account/icons/genome.svg",
+      "colour": "#b4533a",
+      "href": "/genome/",
+      "summary": "Load reference genomes, build a library of aligned tracks, and explore them in an IGV-style browser — then export the view as a publication figure.",
+      "points": [
+        "Reference genomes with aligned BigWig, BED and GFF tracks, navigated by locus or region",
+        "Upload BAM and wig files; they convert to BigWig on the server so only the summary is kept",
+        "Export the current view as an SVG figure, or send it straight to the Lab Notebook",
+        "Tag plasmids and seed stocks so a genome or track feeds the Seed Bank family tree"
+      ],
+      "health": "/genome/health",
+      "status": "live"
     }
   ],
   "admin": [

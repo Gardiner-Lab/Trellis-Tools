@@ -8,6 +8,24 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.33.0] - 2026-11-05
+Adds the Genome Browser, and pins lab-suite-portal and lab-suite-backup 2.33.0.
+
+### Added
+- Genome Browser (new tool, at `/genome/`): load reference genomes, build a library of aligned
+  data tracks, and view them in an IGV-style browser. Reference genomes are uploaded as FASTA (up to
+  4 GB); tracks are BigWig, BED or GFF, with BAM and wig files converted to BigWig on the server so
+  only the coverage summary is kept. A track is accepted only when every chromosome name and
+  coordinate matches the reference genome exactly.
+- Sharing follows the suite's model: a reference genome defaults to its owner lab's chair group, a
+  track to its owner lab, and either can be shared further by a member of the owner lab.
+- Export the current view as an SVG figure, or send it straight to the Lab Notebook.
+- Tag a track or genome with a plasmid (MoClo/Plasmid Editor) or a seed stock (Seed Bank); a line or
+  plant tag feeds that line's or plant's family tree in the Seed Bank.
+- Runs as two containers built from `./genome`: the web service and a single conversion worker
+  with its own CPU and memory limits, coordinating through a durable on-disk job queue so an
+  accepted conversion survives a restart.
+
 ## [2.32.0] - 2026-11-05
 
 Pins Lab Stocks 0.20.0, Seed Bank 0.12.0 and Lab Notebook 0.22.0.
