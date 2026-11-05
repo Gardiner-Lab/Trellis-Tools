@@ -8,6 +8,17 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.34.1] - 2026-11-05
+Fixes the Genome Browser containers failing to start; pins lab-suite-portal, lab-suite-backup and
+lab-suite-genome 2.34.1.
+
+### Fixed
+- **The Genome Browser would not start.** The web container invoked `gunicorn` and the worker invoked
+  `python`, but the image provides neither name: Debian ships gunicorn as a module (run with
+  `python3 -m gunicorn`) and Python only as `python3`. Both are now invoked correctly, so the
+  genome-browser and genome-worker containers come up. (2.34.0 published the image but it could not
+  run; this is the first working Genome Browser release.)
+
 ## [2.34.0] - 2026-11-05
 Publishes the Genome Browser as a prebuilt image; pins lab-suite-portal, lab-suite-backup and
 lab-suite-genome 2.34.0.
