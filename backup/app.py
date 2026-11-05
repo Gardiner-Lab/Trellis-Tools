@@ -13,7 +13,7 @@ Two things shape the design:
   it root-equivalent on the host.
 
 * **It is an administrative interface**, so everything behind the login can
-  overwrite lab data. Sign-in reuses the Plasmid Editor's admin accounts rather
+  overwrite lab data. Sign-in reuses the Sequence Editor's admin accounts rather
   than introducing another password, and every path that comes from the browser
   is validated against an allowed root before it is touched. Inside the suite
   (SUITE_AUTH=proxy) there is no sign-in here at all: the suite's sign-in says
@@ -39,7 +39,7 @@ from flask import Flask, jsonify, redirect, request, send_file, session
 import storage
 from storage import StorageError
 
-APP_VERSION = '2.30.2'
+APP_VERSION = '2.31.0'
 
 CONFIG_DIR = Path(os.environ.get('CONFIG_STORE', '/config-store'))
 SETTINGS_FILE = CONFIG_DIR / 'settings.json'
@@ -177,7 +177,7 @@ def archive_path(name: str) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Authentication: the Plasmid Editor's admin accounts
+# Authentication: the Sequence Editor's admin accounts
 # ---------------------------------------------------------------------------
 
 def _lookup(db: Path, username: str):
@@ -198,7 +198,7 @@ def _lookup(db: Path, username: str):
 def check_admin(username: str, password: str) -> bool:
     """
     Accounts are shared across the suite, so the MoClo user table is the
-    directory and is consulted first. The Plasmid Editor's own table is the
+    directory and is consulted first. The Sequence Editor's own table is the
     fallback, for a deployment without the MoClo tool.
 
     Only administrators get in: this console can overwrite every database.

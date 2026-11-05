@@ -8,7 +8,7 @@ landing page that lists the tools:
 | `/` | Landing page | this repository |
 | `/account/` | Sign-in, registration and labs for every tool | this repository |
 | `/` (everything else) | [MoClo Library Tool](https://github.com/Gardiner-Lab/moclo-library-tool) | its own |
-| `/editor/` | [Plasmid Editor](https://github.com/Gardiner-Lab/plasmid-editor) | its own |
+| `/editor/` | [Sequence Editor](https://github.com/Gardiner-Lab/plasmid-editor) | its own |
 | `/notebook/` | [Lab Notebook](https://github.com/Gardiner-Lab/lab-notebook) | its own |
 | `/seeds/` | [Seed Bank](https://github.com/Gardiner-Lab/seed-bank) | its own |
 | `/stocks/` | [Lab Stocks](https://github.com/Gardiner-Lab/lab-stocks) | its own |
@@ -20,7 +20,7 @@ copied into this repository. The file converter has no page of its own: only
 the notebook, the Seed Bank and Lab Stocks reach it, on an internal network with
 no way out to the internet, so attachments never leave the server. It uses
 about 370 MiB of memory. The two share a data volume so a plasmid edited in
-the Plasmid Editor is updated in the MoClo tool as well.
+the Sequence Editor is updated in the MoClo tool as well.
 
 ## Installing
 
@@ -111,7 +111,7 @@ git pull
 ./install.sh
 ```
 
-Each release of this repository pins versions of MoClo, the Plasmid Editor and
+Each release of this repository pins versions of MoClo, the Sequence Editor and
 the backup service that were tested together (see `CHANGELOG.md`), so an update
 always moves to a known-good combination; nothing changes until you update.
 Data lives in the `moclo-data` and `editor-data` volumes and survives updates.
@@ -153,7 +153,7 @@ so it generates its own links correctly:
 ```nginx
 location = /        -> landing page (static)
 location /account/  -> sign-in, registration and labs
-location /editor/   -> Plasmid Editor   (URL_PREFIX=/editor)
+location /editor/   -> Sequence Editor   (URL_PREFIX=/editor)
 location /notebook/ -> Lab Notebook     (URL_PREFIX=/notebook)
 location /seeds/    -> Seed Bank        (URL_PREFIX=/seeds)
 location /stocks/   -> Lab Stocks       (URL_PREFIX=/stocks)
@@ -166,7 +166,7 @@ rather than by a web framework. A fourth Python process to serve one HTML page
 would cost about 40 MiB for nothing.
 
 Measured idle memory for the stack is roughly **166 MiB**: MoClo 58,
-Plasmid Editor 61, sign-in service 30, nginx 17.
+Sequence Editor 61, sign-in service 30, nginx 17.
 
 ### One sign-in
 
@@ -206,7 +206,7 @@ give a lab a new code (the old one stops working at once) or close it to new
 members. Lab leads see their own lab, its code to hand out, and its members.
 
 All of this is kept in `suite.db` (the `suite-data` volume), which the tools
-read: the Plasmid Editor takes each person's lab and lab-lead role from it.
+read: the Sequence Editor takes each person's lab and lab-lead role from it.
 Administrator status stays in the account directory, where MoClo reads it too.
 
 ### The dashboard
@@ -297,7 +297,7 @@ connected piece of work in every tool, for people learning how things work.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SECRET_KEY` | — | **Required.** Signs Plasmid Editor sessions. |
+| `SECRET_KEY` | — | **Required.** Signs Sequence Editor sessions. |
 | `MOCLO_SECRET_KEY` | — | **Required.** Signs MoClo sessions. Use a different value. |
 | `SUITE_SECRET_KEY` | `SECRET_KEY` | Signs the suite's sign-in, which every tool trusts. |
 | `SUITE_PORT` | `8080` | Host port for the whole suite, over https. |

@@ -1,5 +1,5 @@
 # Build images from source instead of pulling the published ones: the MoClo
-# Library Tool and the Plasmid Editor from working copies, and the sign-in and
+# Library Tool and the Sequence Editor from working copies, and the sign-in and
 # backup services from ./portal and ./backup. Used before
 # a release, for testing a change against the stack, and by install.sh while an
 # image has not been published yet.

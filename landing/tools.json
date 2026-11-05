@@ -24,12 +24,12 @@
     },
     {
       "id": "editor",
-      "name": "Plasmid Editor",
+      "name": "Sequence Editor",
       "icon": "✂️",
       "image": "/account/icons/editor.svg",
       "colour": "#2a7480",
       "href": "/editor/",
-      "summary": "Edit and annotate any plasmid, simulate cloning, and align sequencing reads. For work that is not Golden Gate based.",
+      "summary": "Edit and annotate any sequence, simulate cloning, and align sequencing reads. For work that is not Golden Gate based.",
       "points": [
         "Type directly into the sequence; restriction maps and virtual gels",
         "Golden Gate, Gibson, ligation and recombination simulation",

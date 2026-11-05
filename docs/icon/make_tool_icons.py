@@ -53,7 +53,7 @@ for (t0, t1, b0, b1), colour in (((6, 35, 6, 29), BROWN), ((38, 63, 32, 57), GRE
                  f'<path d="{rungs}" stroke="{colour}" stroke-width="1.9" stroke-linecap="round"/>')
 icons.append(icon('moclo', 'MoClo Library Tool', ''.join(parts), width=96))
 
-# Plasmid Editor: a plasmid, a feature on it (green arrow), and a cut site.
+# Sequence Editor: a plasmid, a feature on it (green arrow), and a cut site.
 ring = f'<circle cx="32" cy="33" r="18" fill="none" stroke="{BROWN}" stroke-width="4.2"/>'
 d, (ex, ey), ang = arc(32, 33, 18, 190, 285)
 feature = (f'<path d="{d}" fill="none" stroke="{GREEN}" stroke-width="7" stroke-linecap="butt"/>'
@@ -62,7 +62,7 @@ feature = (f'<path d="{d}" fill="none" stroke="{GREEN}" stroke-width="7" stroke-
 cx, cy = 32 + 18 * math.cos(math.radians(160)), 33 + 18 * math.sin(math.radians(160))
 dx, dy = math.cos(math.radians(160)), math.sin(math.radians(160))
 cut = f'<path d="M{cx - 6 * dx:.2f} {cy - 6 * dy:.2f}L{cx + 6 * dx:.2f} {cy + 6 * dy:.2f}" stroke="{BROWN}" stroke-width="2.4" stroke-linecap="round"/>'
-icons.append(icon('editor', 'Plasmid Editor', ring + feature + cut))
+icons.append(icon('editor', 'Sequence Editor', ring + feature + cut))
 
 # Lab Notebook: a notebook, its spine, a leaf on the cover.
 lf, vn = leaf('translate(26.5 38) rotate(-40) scale(1.55)')

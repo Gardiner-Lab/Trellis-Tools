@@ -52,7 +52,7 @@ such files to make sure.
 
 `https://your-server:8080/backup/`, or the **Backups** card on the landing page.
 
-It asks for a Plasmid Editor **administrator** account rather than adding
+It asks for a Sequence Editor **administrator** account rather than adding
 another password. Everything behind that sign-in can overwrite lab data, so if
 the server is reachable from outside the building, restrict the `/backup/`
 location in `nginx/default.conf` to your network:

@@ -8,6 +8,20 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.31.0] - 2026-11-05
+
+Pins Sequence Editor 0.21.0, MoClo 1.19.1, Lab Notebook 0.21.2, Seed Bank 0.11.1, Lab Stocks 0.19.1.
+
+### Changed
+- **The Plasmid Editor is now the Sequence Editor.** It holds linear fragments and sequencing reads as well
+  as plasmids, so the old name was too narrow. The landing page, the top bar on every tool, the help and the
+  docs all follow the new name, and inside the editor what it holds is called a *sequence* where it was
+  called a plasmid.
+- The word *plasmid* is kept wherever it still means one: glycerol stocks in Lab Stocks, parts, backbones and
+  assembled plasmids in MoClo, the lines in the Seed Bank, and plasmids linked from the Lab Notebook.
+- **Nothing moves.** The address is still `/editor/`, the published image is still `plasmid-editor`, the
+  container and the database file keep their names, and no record changes. An upgrade needs no migration.
+
 ## [2.30.2] - 2026-11-05
 
 Tool versions are unchanged from 2.30.1 (Lab Notebook 0.21.1). The teaching demo

@@ -147,7 +147,7 @@ function renderLogin(message, session) {
   $('#main').innerHTML = `
     <div class="login card">
       <h2>Backup console</h2>
-      <p class="hint">Sign in with a Plasmid Editor <b>administrator</b> account.</p>
+      <p class="hint">Sign in with a Sequence Editor <b>administrator</b> account.</p>
       <div id="loginError"></div>
       <form id="loginForm">
         <div class="field"><label for="u">Username</label><input id="u" autocomplete="username" required></div>
@@ -573,7 +573,7 @@ function confirmRestore(name) {
       <div class="modal-head">Restore from ${esc(name)}?</div>
       <div class="modal-body">
         <div class="alert alert-warn">
-          This replaces the MoClo and Plasmid Editor databases with the contents of this
+          This replaces the MoClo and Sequence Editor databases with the contents of this
           archive. Anything added since it was taken will be gone.
         </div>
         <p class="hint">

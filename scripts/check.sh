@@ -98,7 +98,7 @@ route "/account/register" 200 "registration page"
 gated "/"                 "landing page"
 gated "/tools.json"       "tool list"
 gated "/parts"            "MoClo pages"
-gated "/editor/editor"    "Plasmid Editor pages"
+gated "/editor/editor"    "Sequence Editor pages"
 gated "/notebook/"        "Lab Notebook pages"
 gated "/seeds/"           "Seed Bank pages"
 gated "/stocks/"          "Lab Stocks pages"
@@ -112,7 +112,7 @@ route "/booking"          301 "/booking goes to /booking/"
 echo "Each tool, behind the proxy:"
 tool "/account/health"  "sign-in service"   SUITE_VERSION    lab-suite-portal
 tool "/health"          "MoClo Library Tool"
-tool "/editor/health"   "Plasmid Editor"    EDITOR_VERSION   plasmid-editor
+tool "/editor/health"   "Sequence Editor"    EDITOR_VERSION   plasmid-editor
 tool "/notebook/health" "Lab Notebook"      NOTEBOOK_VERSION lab-notebook
 tool "/seeds/health"    "Seed Bank"         SEEDS_VERSION    seed-bank
 tool "/stocks/health"   "Lab Stocks"        STOCKS_VERSION   lab-stocks

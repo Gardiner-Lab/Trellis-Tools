@@ -2,7 +2,7 @@
 The suite's account directory: who can sign in, and who is an administrator.
 
 It is the MoClo Library Tool's ``users`` table, as it was before the suite had
-a sign-in of its own; the Plasmid Editor's table is the fallback, for a stack
+a sign-in of its own; the Sequence Editor's table is the fallback, for a stack
 without MoClo. This module is the only place the sign-in service touches it.
 """
 

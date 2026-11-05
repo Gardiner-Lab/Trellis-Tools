@@ -564,7 +564,7 @@ def _setting(conn, key: str) -> Optional[str]:
 
 def _import_from_editor(conn: sqlite3.Connection, editor_db: Path) -> int:
     """
-    Labs, codes, memberships and lab leads were the Plasmid Editor's before
+    Labs, codes, memberships and lab leads were the Sequence Editor's before
     the suite had a registration of its own. Bring them over, once, so nothing
     has to be set up again. Returns how many labs were imported.
     """

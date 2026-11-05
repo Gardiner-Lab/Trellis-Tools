@@ -180,13 +180,13 @@ class Demo:
         say('two saved to the dashboard tab Saved constructs')
         self.ids.update(moclo_l1=l1['id'], moclo_l2=l2['id'])
 
-    # --- Plasmid Editor --------------------------------------------------------------------
+    # --- Sequence Editor --------------------------------------------------------------------
 
     def editor(self):
         l1 = self.demo.post('/editor/api/moclo/import', {'kind': 'plasmid', 'id': self.ids['moclo_l1']})['sequence']
         l2 = self.demo.post('/editor/api/moclo/import', {'kind': 'plasmid', 'id': self.ids['moclo_l2']})['sequence']
         self.ids.update(l1=l1['id'], l1_name=l1['name'], l2=l2['id'], l2_name=l2['name'])
-        say(f'Plasmid Editor: {l1["name"]} ({len(l1["sequence"])} bp) and {l2["name"]} ({len(l2["sequence"])} bp)')
+        say(f'Sequence Editor: {l1["name"]} ({len(l1["sequence"])} bp) and {l2["name"]} ({len(l2["sequence"])} bp)')
         # Two Sanger reads of clone 2: one clean, one with a base call to look at.
         seq = l1['sequence'].upper()
         start = max(0, seq.find('ATG') - 60)
@@ -348,7 +348,7 @@ class Demo:
             'host_system': 'Agrobacterium / Rhizobium', 'selection': 'Spectinomycin, Rifampicin, Gentamicin',
             'location': '−80 °C freezer 1 / box 3 / A4', 'made_on': day(7), 'biosafety': 'I', 'harmful': 'no',
             'plant_markers': 'Kanamycin', 'notes': 'For dipping the homozygous T3 line: select on kanamycin.'})['record']
-        say(f'Plasmid Editor: {ko["name"]}; Lab Stocks: kept in Agrobacterium as {stock["code"]}')
+        say(f'Sequence Editor: {ko["name"]}; Lab Stocks: kept in Agrobacterium as {stock["code"]}')
         self.ids.update(ko=ko['id'], ko_name=ko['name'], ko_stock=stock['code'], guides=guides)
 
     # --- Seed Bank ------------------------------------------------------------------------

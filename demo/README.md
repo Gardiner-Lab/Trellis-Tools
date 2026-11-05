@@ -48,7 +48,7 @@ and bookings fall in the current week.
   the moclo registry). The Cas9 CDS is **not Cas9**: a site-free reading frame of
   the same length, named as a stand-in, because no Cas9 sequence ships with the
   suite. The two acceptors it goes into are minimal stand-ins too.
-- **Plasmid Editor**: both plasmids, linked to MoClo; two sequencing reads of
+- **Sequence Editor**: both plasmids, linked to MoClo; two sequencing reads of
   clone 2, judged and confirmed; a home-made gel ladder (shared in the chair
   group); an enzyme list.
 - **Lab Stocks**: glycerol stocks of the plasmids (E. coli, and Agrobacterium for

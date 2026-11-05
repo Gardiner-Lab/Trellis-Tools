@@ -109,7 +109,7 @@ prepare_images() {
                 local editor_src
                 editor_src="$(grep -E '^EDITOR_SRC=' .env | cut -d= -f2-)"
                 editor_src="${editor_src:-../plasmid-editor}"
-                [ -f "$editor_src/Dockerfile" ] || die "the Plasmid Editor image is not published yet and there is no checkout at $editor_src to build it from. Clone it there (git clone https://github.com/Gardiner-Lab/plasmid-editor $editor_src) and rerun."
+                [ -f "$editor_src/Dockerfile" ] || die "the Sequence Editor image is not published yet and there is no checkout at $editor_src to build it from. Clone it there (git clone https://github.com/Gardiner-Lab/plasmid-editor $editor_src) and rerun."
                 ;;
         esac
         local sep=":"
@@ -255,7 +255,7 @@ for name in lab-proxy lab-portal moclo-library-tool plasmid-editor lab-backup la
 done
 
 step "The plan"
-info "Install the suite (landing page, MoClo Library Tool, Plasmid Editor, backups)"
+info "Install the suite (landing page, MoClo Library Tool, Sequence Editor, backups)"
 info "and serve it at https://$(hostname):$PORT/"
 if [ -n "$SRC" ]; then
     info "Take over the existing MoClo:"
@@ -372,7 +372,7 @@ for _ in $(seq 1 60); do
     sleep 2
 done
 [ "$healthy" = 1 ] || { compose ps; die "the tools did not come up within two minutes; see 'docker compose logs'"; }
-ok "MoClo Library Tool and Plasmid Editor are answering"
+ok "MoClo Library Tool and Sequence Editor are answering"
 
 # Which password the admin account has now: the one in .env, the lab's own,
 # or the starting default, to be changed at the first sign-in.
@@ -391,7 +391,7 @@ import sqlite3; print(sqlite3.connect('/data/plasmid_editor.db').execute('SELECT
     if [ "$editor_users" -ge "${MOCLO_USERS:-0}" ]; then
         ok "all $MOCLO_USERS MoClo account(s) can sign in to both tools"
     else
-        warn "only $editor_users of $MOCLO_USERS MoClo accounts reached the Plasmid Editor; see 'docker compose logs editor'"
+        warn "only $editor_users of $MOCLO_USERS MoClo accounts reached the Sequence Editor; see 'docker compose logs editor'"
     fi
     trap - ERR
 fi
