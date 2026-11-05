@@ -1,6 +1,8 @@
 .env
 *.db
 data/
+# except the demo's own kit plasmid (MIT, see demo/data/LICENSE.moclo-registry)
+!demo/data/
 
 # Local backup destination used for testing
 backups/

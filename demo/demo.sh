@@ -23,6 +23,12 @@ if [ -z "${SUITE_URL:-}" ]; then
     public=$(grep -E '^SUITE_PUBLIC_URL=' .env 2>/dev/null | tail -1 | cut -d= -f2- || true)
     port=$(grep -E '^HTTPS_PORT=' .env 2>/dev/null | tail -1 | cut -d= -f2- || true)
     SUITE_URL="${public:-https://localhost:${port:-8080}}"
+    # Served over https with its own certificate: an http address would only redirect, losing the sign-in.
+    if [ -f certs/suite.crt ]; then SUITE_URL="${SUITE_URL/#http:/https:}"; fi
+fi
+# A suite with its own lab CA (scripts/make-certs.sh): trust it, as the lab's browsers do.
+if [ -z "${SSL_CERT_FILE:-}" ] && [ -f certs/lab-suite-ca.crt ]; then
+    export SSL_CERT_FILE="$PWD/certs/lab-suite-ca.crt"
 fi
 insecure=()
 case "$SUITE_URL" in https://localhost*|https://127.0.0.1*) insecure=(--insecure) ;; esac

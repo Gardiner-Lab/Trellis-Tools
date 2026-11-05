@@ -10,6 +10,9 @@ Arabidopsis.
 
     MoClo         three transcription units from the demo parts library, a Level 1
                   plasmid (35S:tRFP) and a Level 2 plasmid with all three
+    CRISPR        a knock-out of tRFP from the CRISPR Designer: two guides, a Cas9 unit
+                  (position 1, stand-in CDS), a kanamycin unit (position 3, from the
+                  kit's pICSL70004 in demo/data), into the editor and Lab Stocks
     Plasmid Ed.   both plasmids, linked to MoClo; sequencing reads on the Level 1
                   plasmid, checked and confirmed; a home-made gel ladder; an enzyme list
     Lab Stocks    glycerol stocks of the plasmids (E. coli and Agrobacterium),
@@ -79,6 +82,62 @@ def steps(title: str, items, done: int = 0) -> dict:
 def table(title: str, columns, rows) -> dict:
     return {'type': 'table', 'title': title, 'columns': [{'name': c, 'kind': 'text'} for c in columns],
             'rows': [{'cells': [str(c) for c in r]} for r in rows]}
+
+
+SITES = ('GGTCTC', 'GAGACC', 'GAAGAC', 'GTCTTC', 'CGTCTC', 'GAGACG')   # BsaI, BpiI, BsmBI, both strands
+
+
+def kit_cassette(filename: str) -> str:
+    """The part in a MoClo kit plasmid (demo/data): the stretch between its two BsaI sites, overhangs included."""
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', filename), encoding='utf-8') as f:
+        origin = f.read().split('ORIGIN', 1)[1]
+    seq = ''.join(c for c in origin.upper() if c in 'ACGT')
+    seq += seq                                       # circular: the part may run across the origin
+    start = seq.index('GGTCTC') + 7
+    end = seq.index('GAGACC', start) - 1
+    return seq[start:end]
+
+
+def stand_in_cds(codons: int) -> str:
+    """A reproducible open reading frame free of Golden Gate sites, standing in for a sequence the demo cannot ship."""
+    import random
+    rng = random.Random(9)
+    sense = [a + b + c for a in 'ACGT' for b in 'ACGT' for c in 'ACGT' if a + b + c not in ('TAA', 'TAG', 'TGA')]
+    cds = 'ATG'
+    while len(cds) < 3 * (codons - 1):
+        codon = rng.choice(sense)
+        if not any(s in cds[-5:] + codon for s in SITES):
+            cds += codon
+    return cds + 'TAA'
+
+
+def acceptor_genbank(name: str, o5: str, o3: str, enzyme: str) -> bytes:
+    """A minimal acceptor vector as GenBank, wired as MoClo's own demo acceptors are: two convergent
+    Type IIS sites around a dropout, leaving the backbone with overhangs o5 and o3."""
+    site, spacer = {'BsaI': ('GGTCTC', 'A'), 'BpiI': ('GAAGAC', 'AA')}[enzyme]
+    rc = site[::-1].translate(str.maketrans('ACGT', 'TGCA'))
+    seq = ('AGCGTCAGGCACTGTGCCTGACGATCAGTACGGCAT' + o5 + spacer + rc + 'TGACT' * 12 + site + spacer + o3
+           + 'ATGCCGTACTGATCGTCAGGCACAGTGCCTGACGCT').lower()
+    lines = [f'{i + 1:>9} ' + ' '.join(seq[j:j + 10] for j in range(i, min(i + 60, len(seq)), 10))
+             for i in range(0, len(seq), 60)]
+    return (f'LOCUS       {name:<16} {len(seq)} bp    DNA     circular SYN\nDEFINITION  {name}.\nFEATURES             '
+            f'Location/Qualifiers\nORIGIN\n' + '\n'.join(lines) + '\n//\n').encode()
+
+
+def protospacers(cds: str, n: int) -> list:
+    """n SpCas9 guides (20 nt before an NGG) spread along the first half of a CDS, either strand."""
+    comp = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+    found = []
+    for strand in (cds, ''.join(comp[c] for c in reversed(cds))):
+        for i in range(10, len(strand) // 2):
+            g = strand[i:i + 20]
+            gc = (g.count('G') + g.count('C')) / 20
+            if strand[i + 21:i + 23] == 'GG' and 0.4 <= gc <= 0.65 and 'TTTT' not in g and not any(s in g for s in SITES):
+                found.append(g)
+                break
+    if len(found) < n:
+        raise SuiteError(f'only {len(found)} guide(s) found on the tRFP CDS')
+    return found[:n]
 
 
 class Demo:
@@ -227,6 +286,70 @@ class Demo:
             say(f'Lab Stocks: {len(plants)} tubes of T1 leaf DNA')
         except SuiteError as exc:
             say(f'(no plant material: {exc})')
+
+    # --- CRISPR Designer -------------------------------------------------------------------
+
+    def crispr(self):
+        """A knock-out of the tRFP reporter: two guides on its CDS, with a Cas9 unit (Level 2
+        position 1) and a kanamycin unit (position 3), since the T3 line already carries Basta."""
+        parts = {p['name']: p['sequence'].upper() for p in self.demo.get('/api/parts?limit=500')['parts']}
+        p35s, t35s, trfp = parts['DEMO p35S (short)'], parts['DEMO t35S'], parts['DEMO tRFP (CDS)']
+
+        def unit(name, o5, o3, tu, unit_kind, description):
+            """A Level 1 unit: a transcription unit (GGAG..CGCT) between its Level 2 position's overhangs."""
+            part = self.demo.post('/api/parts', {'name': name, 'part_type': 'Coding', 'sequence': o5 + tu[4:-4] + o3,
+                                                 'overhang_5prime': o5, 'overhang_3prime': o3,
+                                                 'lab_source': 'Demo Lab', 'description': description})['part']
+            self.demo.put(f'/api/parts/{part["id"]}', {'level': '1', 'unit': unit_kind})
+            return part['id']
+
+        cas9_cds = 'AATG' + stand_in_cds(1368)[1:] + 'GCTT'
+        cds = self.demo.post('/api/parts', {'name': 'Cas9 CDS, stand-in sequence (demo)', 'part_type': 'Coding', 'sequence': cas9_cds,
+                                            'overhang_5prime': 'AATG', 'overhang_3prime': 'GCTT', 'lab_source': 'Demo Lab',
+                                            'description': 'NOT Cas9: a site-free open reading frame of SpCas9\'s length (1368 codons), '
+                                                           'standing in for a real Cas9 CDS in the demo.'})['part']
+        self.demo.put(f'/api/parts/{cds["id"]}', {'level': '0', 'unit': 'CDS'})
+        cas9 = unit('Cas9 unit, position 1 (demo)', 'TGCC', 'GCAA', p35s + cas9_cds[4:] + t35s[4:], 'Cas',
+                    'p35S:Cas9:t35S for Level 2 position 1. The Cas9 CDS is a stand-in sequence, not Cas9.')
+        kan = unit('Kanamycin unit NOS:nptII, position 3 (demo)', 'ACTA', 'TTAC', kit_cassette('pICSL70004.gb'), 'Marker',
+                   'NOS promoter, nptII, NOS terminator from the MoClo Plant Parts kit (pICSL70004), for Level 2 position 3.')
+        say('MoClo: a Cas9 unit (position 1, stand-in CDS) and a kanamycin unit (position 3, from pICSL70004)')
+
+        # The designer puts the guides into the Level 1 acceptor of their position (pICH47742, position 2), found
+        # by name, and the whole construct into a Level 2 acceptor taking TGCC..GGGA (as pAGM4673 does).
+        backbones = {}
+        for name, o5, o3, enzyme, about in (
+                ('pICH47742-like L1 acceptor, position 2 (demo)', 'GGAG', 'CGCT', 'BsaI', 'Level 1, position 2: for the guides.'),
+                ('pAGM4673-like L2 acceptor (demo)', 'TGCC', 'GGGA', 'BpiI', 'Level 2: positions 1 onwards, closed by an end-linker.')):
+            made = self.demo.post('/api/backbones', files=[('file', 'acceptor.gb', acceptor_genbank('acceptor', o5, o3, enzyme), 'text/plain')],
+                                  form={'name': name, 'description': f'{about} A minimal stand-in, not the real vector.',
+                                        'enzyme': enzyme, 'confirm_backbone': 'true'})
+            backbones[o5] = (made.get('backbone') or made)['id']
+        say('MoClo: stand-in acceptors for the guides (pICH47742-like) and for Level 2 (pAGM4673-like)')
+
+        guides = protospacers(trfp, 2)
+        for g in guides:
+            if not self.demo.post('/api/guide-designer/validate', {'guide': g})['valid']:
+                raise SuiteError(f'guide {g} was not accepted by the CRISPR Designer')
+        l2_backbone = backbones['TGCC']
+        made = self.demo.post('/api/guide-designer/create-construct', {
+            'guides': guides, 'promoter': 'AtU6-26p', 'backbone_flavor': 'improved', 'l1_acceptor': 'pICH47742',
+            'cas_part_id': cas9, 'resistance_part_id': kan, 'construct_name': 'tRFP-KO',
+            'create_plasmid': True, 'l2_backbone_id': l2_backbone})
+        if not made.get('plasmid'):
+            raise SuiteError('CRISPR Designer made no plasmid: ' + '; '.join(made.get('messages') or []))
+        plasmid = made['plasmid']
+        say(f'CRISPR Designer: 2 guides on tRFP (AtU6-26p), Level 2 plasmid {plasmid["name"]} ({plasmid["length"]} bp)')
+        self.demo.post('/api/me/saved', {'item_type': 'plasmid', 'ref_id': plasmid['id'], 'title': plasmid['name'],
+                                         'summary': {'note': 'CRISPR knock-out of the tRFP reporter'}})
+        ko = self.demo.post('/editor/api/moclo/import', {'kind': 'plasmid', 'id': plasmid['id']})['sequence']
+        stock = self.demo.post('/stocks/api/glycerol', {
+            'plasmid_id': ko['id'], 'plasmid_name': ko['name'], 'clone': '1', 'host': 'GV3101 (pMP90)',
+            'host_system': 'Agrobacterium / Rhizobium', 'selection': 'Spectinomycin, Rifampicin, Gentamicin',
+            'location': '−80 °C freezer 1 / box 3 / A4', 'made_on': day(7), 'biosafety': 'I', 'harmful': 'no',
+            'plant_markers': 'Kanamycin', 'notes': 'For dipping the homozygous T3 line: select on kanamycin.'})['record']
+        say(f'Plasmid Editor: {ko["name"]}; Lab Stocks: kept in Agrobacterium as {stock["code"]}')
+        self.ids.update(ko=ko['id'], ko_name=ko['name'], ko_stock=stock['code'], guides=guides)
 
     # --- Seed Bank ------------------------------------------------------------------------
 
@@ -439,7 +562,14 @@ class Demo:
             text(f'<p>Drought plants are shorter (about 15 cm against 25 cm) and flower 3 days earlier: see the phenotype '
                  f'summary of {link("seed", i["t2"], i["t2"])}. Plant {link("seed", i["control"][1], i["control"][1])} is '
                  f'homozygous: its seeds {link("seed", i["t3"], i["t3"])} are all Basta-resistant.</p>')])
-        say('Notebook: day pages for cloning, sequencing, dipping, T1 selection and the T2 trial')
+        page(day(7), 'Next: knocking out tRFP', [
+            text(f'<p>Two guides on the tRFP CDS ({", ".join(i["guides"])}), designed in the CRISPR Designer: '
+                 f'{link("plasmid", i["ko"], i["ko_name"])}, Cas9 in position 1 and kanamycin in position 3, since '
+                 f'{link("seed", i["t3"], i["t3"])} is already Basta-resistant. In Agrobacterium as '
+                 f'{link("stock", i["ko_stock"], i["ko_stock"])}.</p>'),
+            steps('Plan', ['Design the guides and the construct', 'Transform GV3101', 'Dip the homozygous T3 line',
+                           'Select T1 on kanamycin', 'Look for plants without RFP'], done=2)])
+        say('Notebook: day pages for cloning, sequencing, dipping, T1 selection, the T2 trial and the knock-out')
         try:
             n.post(f'/notebook/api/notes/{trial["id"]}/shares', {'target_type': 'person', 'target': 'demo-partner'})
             say('the T2 trial page shared with demo-partner, who can add to it')
@@ -454,7 +584,7 @@ class Demo:
         self.ids.update(protocol=protocol['id'], dip=dip['id'])
 
     def run(self, only=None):
-        for name in ('moclo', 'editor', 'stocks', 'seeds', 'partner_seeds', 'partner_stocks', 'booking', 'notebook'):
+        for name in ('moclo', 'editor', 'stocks', 'crispr', 'seeds', 'partner_seeds', 'partner_stocks', 'booking', 'notebook'):
             if only and name not in only:
                 continue
             print(f'{name.replace("_", " ").title()}:', flush=True)

@@ -40,6 +40,14 @@ and bookings fall in the current week.
 - **MoClo**: three transcription units from MoClo's own demo parts, a Level 1
   plasmid (35S:tRFP) and a Level 2 plasmid with all three; two of them saved on
   the dashboard's *Saved constructs*.
+- **CRISPR Designer**: the next step, knocking tRFP out again. Two guides on the
+  tRFP gene (AtU6-26 promoter) become a Level 2 construct with a Cas9 unit in
+  position 1 and a kanamycin unit in position 3 (the T3 line is already
+  Basta-resistant); it is in the editor and kept in Agrobacterium. The kanamycin
+  unit is the kit's real NOS:nptII cassette (`demo/data/pICSL70004.gb`, MIT, from
+  the moclo registry). The Cas9 CDS is **not Cas9**: a site-free reading frame of
+  the same length, named as a stand-in, because no Cas9 sequence ships with the
+  suite. The two acceptors it goes into are minimal stand-ins too.
 - **Plasmid Editor**: both plasmids, linked to MoClo; two sequencing reads of
   clone 2, judged and confirmed; a home-made gel ladder (shared in the chair
   group); an enzyme list.
@@ -56,7 +64,7 @@ and bookings fall in the current week.
   the plasmid and its stocks on.
 - **Lab Notebook**: day pages for each step (cloning, sequencing, dipping, T1
   selection, the trial), with links to the plasmids, stocks and seeds; a
-  protocol in the library, starred; the trial page shared with `demo-partner`,
+  protocol in the library, starred; a page planning the knock-out; the trial page shared with `demo-partner`,
   who can add to it; the partner's own page about the cross; and a page for
   each day with a booking.
 - **Booking**: a confocal microscope and a PCR machine (shared with the chair

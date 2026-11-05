@@ -8,6 +8,25 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.30.2] - 2026-11-05
+
+Tool versions are unchanged from 2.30.1 (Lab Notebook 0.21.1). The teaching demo
+gains a step; nothing in the suite itself changes.
+
+### Added
+- **The teaching demo goes on to a knock-out.** `demo/demo.sh load` now also runs the CRISPR Designer:
+  two guides on the tRFP reporter (AtU6-26 promoter) become a Level 2 construct with a Cas9 unit in
+  position 1 and a kanamycin unit in position 3, which goes into the Plasmid Editor, is kept in
+  Agrobacterium in Lab Stocks, and is planned on a notebook page. The kanamycin unit is the kit's own
+  NOS:nptII cassette (`demo/data/pICSL70004.gb`, MIT, from the moclo registry). **The Cas9 CDS is not
+  Cas9**: a site-free reading frame of the same length, named and described as a stand-in, because no
+  Cas9 sequence ships with the suite. The two acceptors it assembles into are minimal stand-ins too.
+
+### Fixed
+- `demo/demo.sh` trusts the lab's certificate authority (`certs/lab-suite-ca.crt`) and asks for the
+  suite over https when it has its own certificate: with an `http://` address in `SUITE_PUBLIC_URL` it
+  only met a redirect and lost the sign-in.
+
 ## [2.30.1] - 2026-11-05
 
 Pins Lab Notebook 0.21.1.
