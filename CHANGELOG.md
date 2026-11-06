@@ -8,6 +8,32 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.34.3] - 2026-11-06
+Fixes the version the backup console reports, reloads the routing on an update, and checks the
+Genome Browser; pins lab-suite-portal, lab-suite-backup and lab-suite-genome 2.34.3.
+
+### Fixed
+- **The backup console reported the wrong version, and every install ended in a failure that was
+  not one.** Its `APP_VERSION` was left at 2.32.0 through 2.33.0, 2.34.0, 2.34.1 and 2.34.2, so
+  `scripts/check.sh` compared it with the version the release pins and reported the console as
+  needing a pull, although the container was already running the right image. The Genome Browser
+  reported 0.1.0 for the same reason. Every service published from this repo now reports the
+  version it is published as.
+- **Updating a suite did not pick up a change to the routing.** The proxy's configuration and the
+  landing page are bind-mounted from the checkout rather than baked into its image, so Compose saw
+  nothing changed about the proxy and left it running as it was: after 2.33.0 added `/genome/`,
+  every request to the Genome Browser answered 404 until the proxy was restarted by hand, and
+  `install.sh` failed its own health wait on the way. An update now reloads the proxy.
+
+### Changed
+- `scripts/check.sh` checks the Genome Browser as it checks every other tool: its page sends a
+  signed-out visitor to sign in, `/genome` goes on to `/genome/`, and it is healthy on the pinned
+  version. None of this was checked before, which is why the 404 above went unnoticed.
+- The Genome Browser's tests now run in the suite's checks and before a release. They were in the
+  repository but in no workflow, so 2,400 lines of tests over six files never ran. They run as a
+  second `pytest` because `genome/app.py` and `backup/app.py` both import as the module `app` and
+  one shadows the other in a single collection.
+
 ## [2.34.2] - 2026-11-06
 Fixes Genome Browser routing and worker startup; pins lab-suite-portal, lab-suite-backup and
 lab-suite-genome 2.34.2.

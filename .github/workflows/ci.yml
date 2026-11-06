@@ -16,8 +16,12 @@ jobs:
 
       - name: Sign-in and backup service tests
         run: |
-          pip install flask bcrypt pytest
+          pip install flask bcrypt pytest pyyaml requests
           pytest -q portal/ backup/
+          # A separate run: genome/app.py and backup/app.py both import as the
+          # top-level module "app", so one shadows the other in a single
+          # collection and its tests then fail on the wrong module.
+          pytest -q genome/
 
       - name: Shell scripts
         run: |
@@ -39,6 +43,7 @@ jobs:
           docker run --rm --add-host moclo:127.0.0.1 --add-host editor:127.0.0.1 \
             --add-host backup-console:127.0.0.1 --add-host portal:127.0.0.1 \
             --add-host notebook:127.0.0.1 --add-host seeds:127.0.0.1 --add-host stocks:127.0.0.1 --add-host booking:127.0.0.1 \
+            --add-host genome-browser:127.0.0.1 \
             -v "$PWD/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro" \
             -v "$RUNNER_TEMP/certs:/etc/nginx/certs:ro" nginx:1.27-alpine nginx -t
 

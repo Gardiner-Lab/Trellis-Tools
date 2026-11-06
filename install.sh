@@ -178,6 +178,14 @@ if [ -f .env ] && docker volume inspect "$SUITE_VOLUME" >/dev/null 2>&1; then
     https_setup
     prepare_images
     compose up -d --remove-orphans
+    # The routing and the landing page are bind-mounted from this checkout, not
+    # baked into the proxy image, so compose sees nothing changed about the
+    # proxy and leaves it running with the configuration it started with. A
+    # release that adds a route (/genome/ in 2.33.0) would then answer 404 until
+    # someone reloaded it by hand. Restarting it costs a moment and nothing
+    # else, so do it on every update rather than guess whether routing changed.
+    compose restart proxy >/dev/null 2>&1
+    ok "routing and landing page reloaded"
     UPDATED=1
 else
     UPDATED=0

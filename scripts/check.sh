@@ -103,11 +103,13 @@ gated "/notebook/"        "Lab Notebook pages"
 gated "/seeds/"           "Seed Bank pages"
 gated "/stocks/"          "Lab Stocks pages"
 gated "/booking/"         "Booking pages"
+gated "/genome/"          "Genome Browser pages"
 route "/editor"           301 "/editor goes to /editor/"
 route "/notebook"         301 "/notebook goes to /notebook/"
 route "/seeds"            301 "/seeds goes to /seeds/"
 route "/stocks"           301 "/stocks goes to /stocks/"
 route "/booking"          301 "/booking goes to /booking/"
+route "/genome"           301 "/genome goes to /genome/"
 
 echo "Each tool, behind the proxy:"
 tool "/account/health"  "sign-in service"   SUITE_VERSION    lab-suite-portal
@@ -117,6 +119,7 @@ tool "/notebook/health" "Lab Notebook"      NOTEBOOK_VERSION lab-notebook
 tool "/seeds/health"    "Seed Bank"         SEEDS_VERSION    seed-bank
 tool "/stocks/health"   "Lab Stocks"        STOCKS_VERSION   lab-stocks
 tool "/booking/health"  "Booking"           BOOKING_VERSION  lab-booking
+tool "/genome/health"   "Genome Browser"    SUITE_VERSION    lab-suite-genome
 tool "/backup/health"   "backup console"    SUITE_VERSION    lab-suite-backup
 
 # The file converter has no route through the proxy: where this runs on the
