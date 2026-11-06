@@ -542,7 +542,7 @@ function chairCell(lab, admin, tab, groups) {
   return el('td', {}, pick);
 }
 
-/** Chair groups: labs that work together, and see each other's stocks in Lab Stocks. */
+/** Chair groups: labs that work together, and see each other's stocks, seeds, sequences and MoClo library. */
 function chairGroupsCard(data, tab) {
   const groups = data.chair_groups || [];
   const add = el('form', { class: 'add-row' },

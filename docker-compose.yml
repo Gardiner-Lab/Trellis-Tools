@@ -59,7 +59,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.35.3}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.36.0}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -85,15 +85,19 @@ services:
       - "5003"
 
   moclo:
-    image: ghcr.io/gardiner-lab/moclo-library-tool:${MOCLO_VERSION:-1.19.1}
+    image: ghcr.io/gardiner-lab/moclo-library-tool:${MOCLO_VERSION:-1.20.0}
     container_name: moclo-library-tool
     volumes:
       - moclo-data:/data
+      # Who is in which lab and chair group: the suite's, read here. A part,
+      # backbone or plasmid is its adder's chair group's (MoClo 1.20.0).
+      - suite-data:/suite:ro
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=${MOCLO_SECRET_KEY:?set MOCLO_SECRET_KEY, e.g. openssl rand -hex 32}
       - DATABASE_PATH=/data/moclo.db
       - PARTS_DATABASE_PATH=/data/parts.db
+      - SUITE_DATABASE_PATH=/suite/suite.db
       - BACKUP_DIR=/data/backups
       # Part of the suite: a "Lab tools" link to the landing page, and accounts
       # created on the one registration page (which asks for the lab and its
@@ -119,7 +123,7 @@ services:
       - "5000"
 
   editor:
-    image: ghcr.io/gardiner-lab/plasmid-editor:${EDITOR_VERSION:-0.21.0}
+    image: ghcr.io/gardiner-lab/plasmid-editor:${EDITOR_VERSION:-0.22.0}
     container_name: plasmid-editor
     # MoClo creates its default admin account as it starts. Waiting for it
     # means the editor always sees that account, and replaces its published
@@ -421,7 +425,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.35.3}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.36.0}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -460,7 +464,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.35.3}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.36.0}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -496,7 +500,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.35.3}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.36.0}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:

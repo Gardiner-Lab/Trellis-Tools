@@ -8,6 +8,24 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.36.0] - 2026-11-06
+Pins Sequence Editor 0.22.0 and MoClo Library Tool 1.20.0; pins lab-suite-portal and lab-suite-backup
+2.36.0.
+
+### Changed
+- **Sequences and the MoClo library are each chair group's.** The labs of a chair group see each other's
+  sequences (Sequence Editor) and MoClo parts, backbones and assembled plasmids, read-only, as they
+  already see each other's stocks and seeds. A lab in no chair group keeps them to itself. The Sequence
+  Editor's "Public" (every lab on the server) is gone; MoClo's reference kits are the one thing every lab
+  sees: the built-in toolkit, the bundled Plant MoClo kit, and whatever an administrator marks.
+- **MoClo reads the suite's labs and chair groups.** It now mounts `suite-data` read-only and is given
+  `SUITE_DATABASE_PATH`, as the other tools are; it never writes there.
+
+### Added
+- **A chair group shares its MoClo library with another.** MoClo's new *Library sharing* tab (*MoClo
+  sharing* on the dashboard): an administrator, or a lead of one of its labs, shares; the other chair
+  group sees it read-only. One way.
+
 ## [2.35.3] - 2026-11-06
 Pins lab-suite-portal and lab-suite-backup 2.35.3.
 
