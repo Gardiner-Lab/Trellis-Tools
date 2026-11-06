@@ -156,6 +156,7 @@ backup_db "Lab Notebook"   "${NOTEBOOK_DB:-/notebook/notebook.db}"
 backup_db "Seed Bank"      "${SEEDS_DB:-/seeds/seeds.db}"
 backup_db "Lab Stocks"     "${STOCKS_DB:-/stocks/stocks.db}"
 backup_db "Booking"        "${BOOKING_DB:-/booking/booking.db}"
+backup_db "Genome Browser" "${GENOME_DB:-/genome/genome.db}"
 
 [ -n "$DB_REPORT" ] || fail "no databases were found to back up - check the volume mounts"
 
@@ -175,6 +176,19 @@ copy_extras() {
 }
 copy_extras "moclo-volume"  "${MOCLO_DIR:-/moclo}"
 copy_extras "editor-volume" "${EDITOR_DIR:-/data}"
+
+# The Genome Browser's volume is deliberately not archived here: a reference
+# genome is up to 4 GB and a library of tracks runs to many more, which no
+# nightly tar belongs anywhere near. Its genome.db is copied above, so what the
+# browser knows - genomes, tracks, who they are shared with, their tags - comes
+# back from an archive; the sequence and track files themselves have to be
+# reloaded, or copied separately. Said out loud in the log rather than left for
+# someone to discover during a restore. See docs/BACKUP.md.
+GENOME_DIR="${GENOME_DIR:-/genome}"
+if [ -d "$GENOME_DIR" ]; then
+    big="$(du -sh "$GENOME_DIR" 2>/dev/null | cut -f1)"
+    log "  genome files: not archived (${big:-unknown} of genomes and tracks; see docs/BACKUP.md)"
+fi
 
 # The stack's configuration: compose files, nginx routing, the landing page and
 # the install script, enough to rebuild the stack. Named one by one, so that

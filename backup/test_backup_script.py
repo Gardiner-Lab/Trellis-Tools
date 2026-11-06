@@ -78,3 +78,41 @@ def test_the_configuration_archive_carries_no_secrets(tmp_path):
     for secret in secrets:
         assert secret not in names, f'{secret} was copied to the backup drive'
     assert b's3cret' not in contents and b'PRIVATE KEY' not in contents and b'admin123' not in contents
+
+
+def test_the_genome_database_is_copied_but_its_sequence_files_are_not(tmp_path):
+    """
+    The Genome Browser's volume holds its database beside reference genomes and
+    tracks of many gigabytes. The database belongs in the nightly archive; the
+    files do not, and nothing may quietly put them there.
+    """
+    genome = tmp_path / 'genome'
+    genome.mkdir()
+    sqlite3.connect(genome / 'genome.db').execute('CREATE TABLE genomes (x)').connection.commit()
+    _write(genome / 'genomes' / 'TAIR10' / 'TAIR10.fa', 'a reference genome, in life 4 GB of it')
+    _write(genome / 'tracks' / 'coverage.bw', 'a track')
+    _write(genome / 'scratch' / 'job-1' / 'sorted.bam', 'conversion scratch')
+
+    dest, staging, store = tmp_path / 'dest', tmp_path / 'staging', tmp_path / 'store'
+    dest.mkdir()
+    store.mkdir()
+    (dest / '.backup-target').write_text('')
+    none = {f'{var}_DB': str(tmp_path / f'no-{var.lower()}.db')
+            for var in ('MOCLO', 'PARTS', 'EDITOR', 'SUITE', 'NOTEBOOK', 'SEEDS', 'STOCKS', 'BOOKING')}
+    env = {**os.environ, 'BACKUP_DEST': str(dest), 'BACKUP_STAGING': str(staging),
+           'CONFIG_STORE': str(store), 'CONFIG_DIR': str(tmp_path / 'nosuite'),
+           'MOCLO_DIR': str(tmp_path / 'nodir1'), 'EDITOR_DIR': str(tmp_path / 'nodir2'),
+           'GENOME_DB': str(genome / 'genome.db'), 'GENOME_DIR': str(genome),
+           'NOTIFY_URL': '', **none}
+    run = subprocess.run(['sh', str(SCRIPT)], env=env, capture_output=True, text=True, timeout=120)
+    assert run.returncode == 0, run.stdout + run.stderr
+
+    [archive] = list(dest.glob('lab-suite-*.tar.gz'))
+    with tarfile.open(archive) as outer:
+        names = [m.name for m in outer.getmembers() if m.isfile()]
+    assert any(n.endswith('databases/genome.db') for n in names), names
+    for leaked in ('TAIR10.fa', 'coverage.bw', 'sorted.bam'):
+        assert not any(leaked in n for n in names), f'{leaked} went into the nightly archive'
+    # And the run says what it is leaving behind, rather than leaving it to be
+    # found during a restore.
+    assert 'genome files: not archived' in run.stdout

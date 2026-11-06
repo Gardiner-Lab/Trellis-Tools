@@ -8,6 +8,28 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.34.4] - 2026-11-06
+Backs up the Genome Browser, which no archive had covered; pins lab-suite-portal, lab-suite-backup
+and lab-suite-genome 2.34.4.
+
+### Fixed
+- **The Genome Browser was not backed up at all.** Its volume was mounted into neither the nightly
+  backup nor the console nor the restore service, and `genome.db` was in no list, so from 2.33.0 to
+  2.34.3 every reference genome, track, sharing grant and plasmid or seed tag lived on a single
+  Docker volume with no copy anywhere — and the nightly run reported success while leaving the
+  newest tool out. `genome.db` is now copied with SQLite's online backup like every other database,
+  and restored by the console and `make restore` like every other database.
+
+### Changed
+- The reference genome and track **files** are deliberately still not in the nightly archive: one
+  genome is up to 4 GB and a library of tracks many times that. What the browser knows comes back
+  from an archive and the files have to be reloaded or copied separately, which `docs/BACKUP.md`
+  now sets out, and the backup says in its log, with the size it is leaving out, on every run
+  rather than leaving it to be discovered during a restore.
+- Two checks so that the next tool cannot be forgotten the same way: every `-data` volume the stack
+  declares must be mounted by the backup, console and restore services (and read-only by the
+  nightly job), and every database `backup.sh` copies must be one the console can restore.
+
 ## [2.34.3] - 2026-11-06
 Fixes the version the backup console reports, reloads the routing on an update, and checks the
 Genome Browser; pins lab-suite-portal, lab-suite-backup and lab-suite-genome 2.34.3.

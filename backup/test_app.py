@@ -10,6 +10,7 @@ name a file that is not an archive.
 
 import importlib
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -184,3 +185,49 @@ def test_in_the_suite_the_console_is_a_dashboard_tab(suite_console):
     tabs = suite_console.get('/suite-manifest.json').get_json()['tabs']
     assert tabs == [{'id': 'backups', 'title': 'Backups', 'icon': '💾', 'glyph': 'archive', 'section': 'admin',
                      'roles': ['admin'], 'src': '/backup/?embed=1'}]
+
+
+def test_every_tool_volume_reaches_the_backup_services():
+    """
+    A tool whose volume is not mounted here is not backed up, and nothing says
+    so: the Genome Browser's was missed for four releases (2.33.0 to 2.34.3),
+    and its database went uncopied every night. Each data volume the stack
+    declares must reach the nightly backup, the console and the restore service,
+    so forgetting the next tool fails here instead of during a restore.
+    """
+    yaml = pytest.importorskip('yaml')
+    compose = Path(__file__).resolve().parent.parent / 'docker-compose.yml'
+    if not compose.is_file():          # the image holds the script, not the repo
+        pytest.skip('run from a checkout')
+    with open(compose, encoding='utf-8') as handle:
+        stack = yaml.safe_load(handle)
+
+    # Every volume a tool keeps its data in: the stack's own, less the one that
+    # holds the console's settings rather than anybody's data.
+    declared = {name for name in (stack.get('volumes') or {}) if name.endswith('-data')}
+    assert 'genome-data' in declared, 'the genome volume is gone from the stack'
+
+    def mounted(service):
+        return {v.split(':')[0] for v in (stack['services'][service].get('volumes') or [])}
+
+    for service in ('backup', 'backup-console', 'restore'):
+        missing = declared - mounted(service)
+        assert not missing, f'{service} does not mount {", ".join(sorted(missing))}'
+
+    # The nightly job never needs to write, and must not be able to.
+    for mount in (stack['services']['backup'].get('volumes') or []):
+        if mount.split(':')[0] in declared:
+            assert mount.endswith(':ro'), f'the nightly backup mounts {mount} writable'
+
+
+def test_every_tool_database_can_be_restored(console):
+    """
+    The console restores what the nightly job copies: the two lists are kept by
+    hand in different files, so compare them.
+    """
+    module, _ = console
+    script = (Path(__file__).resolve().parent / 'backup.sh').read_text(encoding='utf-8')
+    copied = set(re.findall(r'backup_db\s+"[^"]+"\s+"\$\{\w+:-([^}]+)\}"', script))
+    assert copied, 'no databases found in backup.sh'
+    for path in copied:
+        assert Path(path).name in module.DATABASES, f'{path} is backed up but cannot be restored'

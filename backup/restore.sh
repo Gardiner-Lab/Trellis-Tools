@@ -134,6 +134,7 @@ restore_db "notebook.db"        "${NOTEBOOK_DB:-/notebook/notebook.db}"
 restore_db "seeds.db"           "${SEEDS_DB:-/seeds/seeds.db}"
 restore_db "stocks.db"          "${STOCKS_DB:-/stocks/stocks.db}"
 restore_db "booking.db"         "${BOOKING_DB:-/booking/booking.db}"
+restore_db "genome.db"          "${GENOME_DB:-/genome/genome.db}"
 
 if [ -f "$ROOT/files/config.tar.gz" ]; then
     say ""

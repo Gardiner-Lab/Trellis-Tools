@@ -26,7 +26,24 @@ make restore         # put the latest backup back
 | `suite.db` — labs, their registration codes, who is in which lab | SQLite online backup |
 | Anything else in MoClo's and the editor's volumes | tar |
 | `notebook.db`, `seeds.db`, `stocks.db` (with their photos and files), `booking.db` | SQLite online backup |
+| `genome.db` — the Genome Browser's reference genomes, tracks, who they are shared with, and their tags | SQLite online backup |
 | The stack's configuration: the compose files, `nginx/`, `landing/`, `scripts/`, `docs/`, `.env.example`, `Makefile`, `install.sh` | tar, **these named files only** |
+
+## What is not: the Genome Browser's sequence and track files
+
+`genome.db` is backed up, so after a restore the browser knows every genome and
+track it held, who they belong to, who they are shared with and how they are
+tagged. **The files themselves are not in the archive.** A reference genome is
+up to 4 GB and a library of tracks runs to many times that, which is more than a
+nightly archive on a network drive can carry; the backup logs a line saying so,
+with the size it is leaving out, on every run.
+
+They are reloadable rather than irreplaceable — a reference genome comes from
+its public source, and a track from the aligned data it was made from — but that
+is work, and a restore will show genomes and tracks whose files are missing. If
+the library has become something you would not want to rebuild, copy
+`/var/lib/docker/volumes/<project>_genome-data/` to the backup drive yourself,
+on whatever rhythm suits it.
 
 Databases are copied with SQLite's **online backup**, so the applications keep
 running and the copy is never caught mid-write. Copying a live `.db` file with
