@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.35.1] - 2026-11-06
+Pins Lab Stocks 0.20.1 and Seed Bank 0.12.1, for the DYMO spreadsheet; pins lab-suite-portal and
+lab-suite-backup 2.35.1.
+
+### Fixed
+- **DYMO Connect read the label spreadsheet as one column, and the separator was never the reason.**
+  `labels-data.csv` began with a byte-order mark, and with one DYMO Connect's Import data takes a
+  whole row as a single cell whichever separator it was given — so exporting with a comma and
+  exporting with a semicolon failed identically. The file is written without it now. Opening it in
+  Excel and saving it again was the workaround, and dropping that mark is the only thing Excel
+  changed in this data, which is plain text throughout.
+
 ## [2.35.0] - 2026-11-06
 The Genome Browser becomes a tool of its own, pinned like the others; pins lab-suite-portal and
 lab-suite-backup 2.35.0, and Genome Browser 0.1.0.
