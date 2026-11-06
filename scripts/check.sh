@@ -119,7 +119,7 @@ tool "/notebook/health" "Lab Notebook"      NOTEBOOK_VERSION lab-notebook
 tool "/seeds/health"    "Seed Bank"         SEEDS_VERSION    seed-bank
 tool "/stocks/health"   "Lab Stocks"        STOCKS_VERSION   lab-stocks
 tool "/booking/health"  "Booking"           BOOKING_VERSION  lab-booking
-tool "/genome/health"   "Genome Browser"    SUITE_VERSION    lab-suite-genome
+tool "/genome/health"   "Genome Browser"    GENOME_VERSION   genome-browser
 tool "/backup/health"   "backup console"    SUITE_VERSION    lab-suite-backup
 
 # The file converter has no route through the proxy: where this runs on the

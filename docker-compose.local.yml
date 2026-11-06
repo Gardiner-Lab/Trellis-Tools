@@ -1,15 +1,14 @@
-# Build images from source instead of pulling the published ones: the MoClo
-# Library Tool and the Sequence Editor from working copies, and the sign-in and
-# backup services from ./portal and ./backup, and the genome browser from
-# ./genome. Used before
+# Build images from source instead of pulling the published ones: every tool
+# from its working copy, and the sign-in and backup services from ./portal and
+# ./backup. Used before
 # a release, for testing a change against the stack, and by install.sh while an
 # image has not been published yet.
 #
 #   SECRET_KEY=dev MOCLO_SECRET_KEY=dev \
 #     docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 #
-# MOCLO_SRC, EDITOR_SRC, NOTEBOOK_SRC, SEEDS_SRC and STOCKS_SRC point at the
-# checkouts (default: sibling directories).
+# MOCLO_SRC, EDITOR_SRC, NOTEBOOK_SRC, SEEDS_SRC, STOCKS_SRC and GENOME_SRC
+# point at the checkouts (default: sibling directories).
 
 services:
   portal:
@@ -53,16 +52,17 @@ services:
     image: lab-booking:local
     pull_policy: never
 
-  # The genome browser is built from ./genome in this repo (not a sibling
-  # checkout), both the web service and the worker from the one image.
+  # The web service and the worker are the one image, built once.
   genome-browser:
-    build: ./genome
-    image: lab-suite-genome:local
+    build:
+      context: ${GENOME_SRC:-../genome-browser}
+    image: genome-browser:local
     pull_policy: never
 
   genome-worker:
-    build: ./genome
-    image: lab-suite-genome:local
+    build:
+      context: ${GENOME_SRC:-../genome-browser}
+    image: genome-browser:local
     pull_policy: never
 
   backup:

@@ -30,9 +30,18 @@ jobs:
       - name: Check versions
         run: |
           version="${GITHUB_REF_NAME#v}"
-          for service in backup portal genome; do
+          for service in backup portal; do
             grep -q "lab-suite-$service:\${SUITE_VERSION:-$version}" docker-compose.yml \
               || { echo "docker-compose.yml does not pin lab-suite-$service to $version"; exit 1; }
+          done
+          # And what those two services report at /health, which scripts/check.sh
+          # compares its pin against. Left unchecked it goes stale: the backup
+          # console reported 2.32.0 from 2.33.0 to 2.34.2 because nothing here
+          # compared the constant with the tag.
+          for file in portal/portal.py backup/app.py; do
+            code="$(sed -n "s/^APP_VERSION = '\(.*\)'/\1/p" "$file")"
+            [ "$code" = "$version" ] \
+              || { echo "$file says APP_VERSION $code, but this tag is $version"; exit 1; }
           done
           grep -q "^## \[$version\]" CHANGELOG.md \
             || { echo "CHANGELOG.md has no section for $version"; exit 1; }
@@ -47,13 +56,7 @@ jobs:
       - name: Sign-in and backup service tests
         run: |
           pip install flask bcrypt pytest pyyaml requests
-          pytest -q portal/ backup/
-          # A separate run: genome/app.py and backup/app.py both import as the
-          # top-level module "app", so one shadows the other in a single
-          # collection and its tests then fail on the wrong module. Its data
-          # root is made at import time, so point it somewhere writable: the
-          # default is /genome, the volume it has in the container.
-          GENOME_DATA_ROOT="$RUNNER_TEMP/genome" pytest -q genome/
+          pytest -q portal/ backup/ tests/
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -92,20 +95,6 @@ jobs:
           tags: ${{ steps.portal-meta.outputs.tags }}
           labels: ${{ steps.portal-meta.outputs.labels }}
 
-      - id: genome-meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/gardiner-lab/lab-suite-genome
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-      - uses: docker/build-push-action@v6
-        with:
-          context: ./genome
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.genome-meta.outputs.tags }}
-          labels: ${{ steps.genome-meta.outputs.labels }}
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}

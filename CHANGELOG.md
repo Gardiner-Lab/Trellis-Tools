@@ -8,6 +8,38 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.35.0] - 2026-11-06
+The Genome Browser becomes a tool of its own, pinned like the others; pins lab-suite-portal and
+lab-suite-backup 2.35.0, and Genome Browser 0.1.0.
+
+### Changed
+- **The Genome Browser has its own repository**, [genome-browser][gb], and its own version. It
+  arrived here as `genome/` in 2.33.0 and shipped pinned to the suite's version, which meant three
+  genome fixes (2.34.0, 2.34.1, 2.34.2) republishing the sign-in and backup images that had not
+  changed, and an eleven-minute multi-architecture toolchain build on every suite tag whatever it
+  touched. It is now pinned as `GENOME_VERSION`, exactly as the Lab Notebook, the Seed Bank, Lab
+  Stocks, Booking, the Sequence Editor and MoClo are, and published as
+  `ghcr.io/gardiner-lab/genome-browser`.
+- **Nothing about a running installation changes** but the image it pulls: the same two containers,
+  the same `/genome/` route, the same `genome-data` volume with the same genomes and tracks in it.
+  The old `lab-suite-genome` images stay published, so 2.33.0 to 2.34.4 keep working.
+- `docker-compose.local.yml` builds it from `GENOME_SRC` (`../genome-browser` by default) like the
+  other tools, rather than from a folder in this repository.
+- How the tool is wired into the suite is now asserted here, in `tests/test_genome_wiring.py`: the
+  worker's CPU and memory caps, its concurrency of one, the one image both containers share, the
+  nginx block that streams large uploads, and that the `/genome` prefix is stripped before
+  proxying. These came from the tool's own tests, because they read `docker-compose.yml` and
+  `nginx/default.conf`, which are this repository's files.
+- The README lists the Genome Browser, which it never did.
+
+### Fixed
+- **A release can no longer ship a service that misreports its version.** The release workflow now
+  checks `APP_VERSION` in `portal/portal.py` and `backup/app.py` against the tag, as the tool repos
+  have always done. It checked the compose pins and the changelog but never the constants, which is
+  how the backup console came to report 2.32.0 from 2.33.0 to 2.34.2.
+
+[gb]: https://github.com/Gardiner-Lab/genome-browser
+
 ## [2.34.4] - 2026-11-06
 Backs up the Genome Browser, which no archive had covered; pins lab-suite-portal, lab-suite-backup
 and lab-suite-genome 2.34.4.

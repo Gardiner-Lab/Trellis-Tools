@@ -17,13 +17,7 @@ jobs:
       - name: Sign-in and backup service tests
         run: |
           pip install flask bcrypt pytest pyyaml requests
-          pytest -q portal/ backup/
-          # A separate run: genome/app.py and backup/app.py both import as the
-          # top-level module "app", so one shadows the other in a single
-          # collection and its tests then fail on the wrong module. Its data
-          # root is made at import time, so point it somewhere writable: the
-          # default is /genome, the volume it has in the container.
-          GENOME_DATA_ROOT="$RUNNER_TEMP/genome" pytest -q genome/
+          pytest -q portal/ backup/ tests/
 
       - name: Shell scripts
         run: |

@@ -112,6 +112,14 @@ prepare_images() {
                 [ -f "$editor_src/Dockerfile" ] || die "the Sequence Editor image is not published yet and there is no checkout at $editor_src to build it from. Clone it there (git clone https://github.com/Gardiner-Lab/plasmid-editor $editor_src) and rerun."
                 ;;
         esac
+        case "$missing" in
+            *genome-browser*)
+                local genome_src
+                genome_src="$(grep -E '^GENOME_SRC=' .env | cut -d= -f2-)"
+                genome_src="${genome_src:-../genome-browser}"
+                [ -f "$genome_src/Dockerfile" ] || die "the Genome Browser image is not published yet and there is no checkout at $genome_src to build it from. Clone it there (git clone https://github.com/Gardiner-Lab/genome-browser $genome_src) and rerun. Building it takes a while: it carries the conversion toolchain."
+                ;;
+        esac
         local sep=":"
         case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) sep=";" ;; esac
         force_env COMPOSE_PATH_SEPARATOR "$sep"
