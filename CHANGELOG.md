@@ -8,6 +8,21 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.34.2] - 2026-11-06
+Fixes Genome Browser routing and worker startup; pins lab-suite-portal, lab-suite-backup and
+lab-suite-genome 2.34.2.
+
+### Fixed
+- **The Genome Browser was unreachable through the proxy.** Its `/genome/` location passed the
+  `/genome` prefix through to the app, which serves at its root, so every request answered 404. The
+  prefix is now stripped before proxying (as for the sign-in and backup services), so `/genome/` and
+  the API and health endpoints resolve.
+- **The conversion worker could crash on a fresh install.** It queried the job table before the web
+  container had created the schema; the worker now creates its data directories and initialises the
+  schema itself (idempotently) before recovering, so it no longer depends on container start order.
+- **The conversion worker always showed as unhealthy.** It reused the web image's HTTP health probe
+  but runs no web server; the probe is now disabled for the worker (restarts still cover crashes).
+
 ## [2.34.1] - 2026-11-05
 Fixes the Genome Browser containers failing to start; pins lab-suite-portal, lab-suite-backup and
 lab-suite-genome 2.34.1.
