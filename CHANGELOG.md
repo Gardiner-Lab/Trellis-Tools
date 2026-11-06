@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.35.3] - 2026-11-06
+Pins lab-suite-portal and lab-suite-backup 2.35.3.
+
+### Fixed
+- **Uploads over 64 MB failed with a 500.** Before any request reaches a tool, the proxy asks the
+  sign-in service whether the visitor is signed in. That check never reads the request body, but
+  nginx still held it to the server-wide 64 MB limit, so a larger upload failed the check with a
+  413, which `auth_request` reports as a 500. The tool's own limit was never reached: the backup
+  console allows 2 GB and the Genome Browser 51 GB. Moving a lab to a new server by uploading its
+  backup archive was the first place it showed. The check now has no limit of its own, and each
+  location keeps the limit it sets.
+
 ## [2.35.2] - 2026-11-06
 Pins Genome Browser 0.2.0, which has the viewer in it; pins lab-suite-portal and lab-suite-backup
 2.35.2.
