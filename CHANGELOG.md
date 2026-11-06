@@ -8,6 +8,17 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.35.2] - 2026-11-06
+Pins Genome Browser 0.2.0, which has the viewer in it; pins lab-suite-portal and lab-suite-backup
+2.35.2.
+
+### Fixed
+- **The Genome Browser's page had no viewer.** It has asked for a vendored `igv.min.js` since the
+  tool arrived in 2.33.0, and the file was never added, so every visitor got a note saying the
+  viewer had not been vendored while the API underneath worked. Genome Browser 0.2.0 vendors
+  igv.js 3.8.10, served from `/genome/static/` rather than a CDN, so an isolated network is still
+  enough. Its licence and the notices of the libraries its bundle carries travel with it.
+
 ## [2.35.1] - 2026-11-06
 Pins Lab Stocks 0.20.1 and Seed Bank 0.12.1, for the DYMO spreadsheet; pins lab-suite-portal and
 lab-suite-backup 2.35.1.
