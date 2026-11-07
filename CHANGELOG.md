@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.38.1] - 2026-11-07
+Pins Lab Stocks 0.20.2, Seed Bank 0.12.2 and Lab Notebook 0.23.1; pins lab-suite-portal and
+lab-suite-backup 2.38.1.
+
+### Fixed
+- **DYMO Connect could still read the label spreadsheet as one column** (Lab Stocks, Seed Bank). It
+  splits a CSV on the list separator in Windows' regional settings, which a browser cannot see. The
+  label download now also has `labels-data.xlsx`, an Excel workbook with real columns, and the README
+  says to import it.
+- **Pasted bullet points became a table** (Lab Notebook). A list copied from Word, a web page or an
+  email is now pasted as a bulleted or numbered list; spreadsheet cells are still a table.
+
 ## [2.38.0] - 2026-11-07
 Pins Genome Browser 0.4.0 and Lab Notebook 0.23.0; pins lab-suite-portal and lab-suite-backup 2.38.0.
 
