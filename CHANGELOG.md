@@ -8,6 +8,30 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.38.0] - 2026-11-07
+Pins Genome Browser 0.4.0 and Lab Notebook 0.23.0; pins lab-suite-portal and lab-suite-backup 2.38.0.
+
+### Added
+- **Genome Browser: sharing between labs.**
+  - **Share genome** and **Share** on every track show who sees it and why. The owning lab can share
+    with other labs or chair groups, and take a share back.
+  - A track shared with a lab that cannot see its genome takes the genome with it.
+- **Genome Browser: track search**, on the landing page and in Bulk track settings, with matches on
+  your other genomes. A long track list scrolls inside itself.
+- **Genome Browser:** track colours by hex code, and a click outside a selection clears it.
+  *Bulk track settings* and *Save to notebook* moved to the left of the selection bar.
+- **Lab Notebook: web links.** A link on the selected text from 🔗 or Ctrl+K, and pasting keeps links.
+- **Lab Notebook:** "1. " at the start of a line starts a numbered list.
+
+### Changed
+- **Lab Notebook: who sees whose notebook follows the lab roles**, unless something is shared:
+  - a lab admin sees every notebook in their lab;
+  - a lab lead sees every one but a lab admin's (now other lab leads' too);
+  - a member sees only their own.
+
+### Fixed
+- **Lab Notebook:** lines typed with Enter could run together when a page was saved.
+
 ## [2.37.0] - 2026-11-07
 Pins Genome Browser 0.3.0; pins lab-suite-portal and lab-suite-backup 2.37.0.
 
