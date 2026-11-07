@@ -95,6 +95,17 @@ icons.append(icon('booking', 'Booking',
                   f'<path d="M22 8V17M42 8V17" stroke="{BROWN}" stroke-width="4.2" stroke-linecap="round"/>'
                   f'<path d="M21 39.5L29 47L44 32" fill="none" stroke="{GREEN}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'))
 
+# Genome Browser: a stretch of chromosome with its ruler, and a gene on it - green exons joined by
+# an intron, reading rightwards.
+icons.append(icon('genome', 'Genome Browser',
+                  f'<path d="M8 47H56" stroke="{BROWN}" stroke-width="4.2" stroke-linecap="round"/>'
+                  f'<path d="M16 47V53M32 47V53M48 47V53" stroke="{BROWN}" stroke-width="2.4" stroke-linecap="round"/>'
+                  f'<path d="M9 27H51" stroke="{GREEN}" stroke-width="2.4" stroke-linecap="round"/>'
+                  f'<rect x="12" y="19" width="9" height="16" rx="2" fill="{GREEN}"/>'
+                  f'<rect x="27" y="19" width="12" height="16" rx="2" fill="{GREEN}"/>'
+                  f'<rect x="45" y="21.5" width="5" height="11" rx="1.5" fill="{GREEN}"/>'
+                  f'<path d="{head(56, 27, 0, 6)}" fill="{GREEN}"/>'))
+
 # Dashboard: a key, a leaf in its bow.
 lk, vk = leaf('translate(17.5 24.5) rotate(-35) scale(.85)')
 icons.append(icon('dashboard', 'Dashboard',

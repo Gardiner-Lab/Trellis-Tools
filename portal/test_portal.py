@@ -954,7 +954,8 @@ def test_the_icons_are_served_to_anyone(portal):
     _, client, _ = portal
     res = client.get('/trellis.svg')
     assert res.status_code == 200 and res.mimetype == 'image/svg+xml'
-    for name in ('moclo', 'editor', 'notebook', 'seeds', 'stocks', 'booking', 'dashboard', 'backups'):
+    for name in ('moclo', 'editor', 'notebook', 'seeds', 'stocks', 'booking', 'genome', 'dashboard',
+                 'backups'):
         res = client.get(f'/icons/{name}.svg')
         assert res.status_code == 200 and res.mimetype == 'image/svg+xml' and b'<svg' in res.data, name
     for bad in ('nope', '..%2Fportal', 'Moclo', 'a' * 40):

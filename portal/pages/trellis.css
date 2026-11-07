@@ -93,21 +93,35 @@ body.tt ::selection { background: var(--tt-green-line); }
 .tt-module img { height: 1.6rem; width: auto; }
 .tt-sub { color: var(--tt-muted); font-size: .92rem; margin-left: -.35rem; }
 .tt-sub::before { content: "·"; margin-right: .45rem; color: var(--tt-brown-line); }
-.tt-tabs { display: flex; gap: .15rem; flex-wrap: wrap; }
+/* The suite's other tools (modules.js): icons in the bar, with their names where there is room. */
+.tt-modules { display: flex; align-items: center; gap: .1rem; padding-left: .7rem; border-left: 1px solid var(--tt-border); }
+.tt-module-link { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .45rem; border-radius: 999px;
+    color: var(--tt-muted) !important; font-size: .85rem; white-space: nowrap; }
+.tt-module-link img { width: 1.15rem; height: 1.15rem; }
+.tt-module-link:hover { background: var(--tt-hover); color: var(--tt-text) !important; }
+.tt-module-link.here { background: var(--tt-green-soft); color: var(--tt-green-ink) !important; font-weight: 600; }
+@media (max-width: 1400px) { .tt-module-link span { display: none; } }
+
+/* The tool's own pages go on a row of their own, under the bar: the top row is the suite (its tools,
+   the dashboard, help, about and who is signed in), the row under it is this tool. */
+.tt-tabs { display: flex; gap: .15rem; flex-wrap: wrap; order: 10; flex: 1 0 100%;
+    margin: .1rem -1.1rem -.35rem; padding: .3rem 1.1rem; border-top: 1px solid var(--tt-line); }
 .tt-tab { color: var(--tt-muted) !important; font-size: .9rem; padding: .32rem .75rem; border-radius: 999px; }
 .tt-tab:hover { background: var(--tt-hover); color: var(--tt-text) !important; }
 .tt-tab.active { background: var(--tt-green-soft); color: var(--tt-green-ink) !important; font-weight: 600; }
-.tt-links { display: flex; gap: .9rem; margin-left: auto; }
+.tt-links { display: flex; gap: .9rem; margin-left: auto; align-items: center; }
 .tt-links a { color: var(--tt-muted) !important; font-size: .88rem; }
 .tt-links a:hover { color: var(--tt-green-dark) !important; }
 .tt-user { color: var(--tt-muted); font-size: .88rem; }
 .tt-links + .tt-user { margin-left: .2rem; }
-.tt-tabs + .tt-user, .tt-module + .tt-user { margin-left: auto; }
+/* With the pages on their own row, whoever is signed in still sits at the end of the top row. */
+.tt-tabs + .tt-user, .tt-module + .tt-user, .tt-modules + .tt-user { margin-left: auto; }
 .tt-logout { font-size: .88rem; color: var(--tt-brown-dark) !important; font-weight: 600; }
 .tt-logout:hover { color: var(--tt-brown) !important; }
 .tt-help { font-size: .88rem; color: var(--tt-green-dark) !important; font-weight: 600; }
 @media (max-width: 860px) {
     .tt-home span, .tt-links { display: none; }
+    .tt-modules { padding-left: .4rem; }
     .tt-home { padding-right: .6rem; }
     .tt-user { margin-left: auto; }
 }

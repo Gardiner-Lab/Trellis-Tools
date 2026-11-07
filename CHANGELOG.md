@@ -8,6 +8,38 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.37.0] - 2026-11-07
+Pins Genome Browser 0.3.0; pins lab-suite-portal and lab-suite-backup 2.37.0.
+
+### Added
+- **The Genome Browser works.** Before, `/genome/` opened an empty viewer with no way to choose a
+  genome. Genome Browser 0.3.0 has:
+  - a landing page to choose a genome, its tracks and where to start;
+  - uploads of genomes and tracks from the page, many tracks at once, each checked against its
+    genome, with chromosome names written another way renamed to match;
+  - selecting a feature or any stretch of sequence and opening it in the **Sequence Editor** (up to
+    30 kb, with its annotations), BLASTing it, or downloading it as FASTA;
+  - track settings for several tracks at once;
+  - **Figure**, which saves the view to the **Lab Notebook** as a page under today;
+  - suite reference genomes that every member sees.
+
+  See its changelog. The image now carries `tabix`, which indexes BED/GFF tracks for the viewer.
+
+### Fixed
+- **The Genome Browser's icon was missing everywhere.** The landing page, the dashboard and every
+  tool's switcher have pointed at `/account/icons/genome.svg` since the tool arrived, and the file
+  was never drawn, so it showed as a broken image. `docs/icon/make_tool_icons.py` now draws it
+  (a chromosome with a gene on it) into `portal/pages/icons/`.
+- **`design/` had fallen behind the tools.** The tools got the switcher in the top bar
+  (`modules.js`) and its styles on 2026-10-31, but the suite's `design/trellis.css` stayed on the
+  2026-10-23 version, so `design/sync.sh` would have taken the switcher out of every tool.
+  `design/trellis.css` is now the tools' version, `design/modules.js` is added, and the sign-in
+  service's pages use it.
+
+### Changed
+- `design/sync.sh` copies `modules.js` too, and also into the Genome Browser, whose assets live in
+  `static/` rather than `app/static/`.
+
 ## [2.36.0] - 2026-11-06
 Pins Sequence Editor 0.22.0 and MoClo Library Tool 1.20.0; pins lab-suite-portal and lab-suite-backup
 2.36.0.
