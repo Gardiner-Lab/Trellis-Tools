@@ -8,6 +8,17 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.42.0] - 2026-11-08
+Pins Genome Browser 0.7.0; pins lab-suite-portal and lab-suite-backup 2.42.0.
+
+### Added
+- **Circos plots in the Genome Browser.** The genome round a circle with the tracks shown as rings
+  (histogram, line or heatmap), links as arcs across it, genes labelled and the selection highlighted;
+  the whole genome, chosen chromosomes or a region. Saved to the Lab Notebook, as SVG, or as Circos's
+  own files. Drawn by Circos (circos.ca), installed in the Genome Browser image.
+- **Links tracks (BEDPE)** in the Genome Browser: links between two regions, such as synteny blocks,
+  checked against the genome at both ends, drawn as arcs.
+
 ## [2.41.0] - 2026-11-08
 Pins MoClo 1.22.0 and Sequence Editor 0.24.0; pins lab-suite-portal and lab-suite-backup 2.41.0.
 
