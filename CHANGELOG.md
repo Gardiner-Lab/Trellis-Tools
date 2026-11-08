@@ -8,6 +8,16 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.41.0] - 2026-11-08
+Pins MoClo 1.22.0 and Sequence Editor 0.24.0; pins lab-suite-portal and lab-suite-backup 2.41.0.
+
+### Changed
+- **Everything of someone archived is open to their lab's leads and lab admins.** Their notebook
+  (already), and now also what MoClo and the Sequence Editor kept to them alone: transcription
+  units, saved constructs and feature-library entries, read-only, marked as theirs. Their
+  plasmids, parts, stocks, seeds, bookings and tracks were already their lab's.
+- The dashboard says "archived" for people who have left a lab, not "left".
+
 ## [2.40.0] - 2026-11-08
 Pins Genome Browser 0.6.0, in which a genome's own chair group can be removed from its sharing
 and added back; pins lab-suite-portal and lab-suite-backup 2.40.0.

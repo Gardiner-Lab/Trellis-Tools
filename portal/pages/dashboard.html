@@ -520,7 +520,7 @@ function membersCard(data, lab, tab) {
         acting ? el('th', {}) : null)),
       el('tbody', {}, people.map(row)))),
     left.length ? el('details', { class: 'left-list' },
-      el('summary', {}, `Left the lab (${left.length})`),
+      el('summary', {}, `Archived (${left.length})`),
       el('p', { class: 'hint' }, 'Archived: their work stays here for the lab\u2019s leads and lab admins, in every tool.'),
       el('div', { class: 'table-scroll' }, el('table', {},
         el('thead', {}, el('tr', {}, el('th', {}, 'Username'), el('th', {}, 'Role here'), el('th', {}, 'Archived'), el('th', {}))),
@@ -594,8 +594,8 @@ function labRow(lab, admin, tab, groups) {
   const copy = lab.code
     ? el('button', { class: 'btn small secondary', type: 'button', onclick: () => copyText(lab.code) }, 'Copy')
     : null;
-  const count = el('td', { class: 'num', title: lab.archived_members ? `And ${lab.archived_members} who left (archived)` : null },
-    String(lab.members), lab.archived_members ? el('span', { class: 'sub' }, `+${lab.archived_members} left`) : null);
+  const count = el('td', { class: 'num', title: lab.archived_members ? `And ${lab.archived_members} archived` : null },
+    String(lab.members), lab.archived_members ? el('span', { class: 'sub' }, `+${lab.archived_members} archived`) : null);
   if (!admin) {
     return el('tr', {}, el('td', {}, lab.name), count,
       codeCell(lab), chairCell(lab, false, tab, groups), el('td', { class: 'actions' }, copy));
@@ -614,7 +614,7 @@ function labRow(lab, admin, tab, groups) {
                        `${lab.name} is closed to new members.`, tab) }, 'Close'),
       el('button', { class: 'btn small secondary', type: 'button', disabled: lab.members > 0 || lab.archived_members > 0,
                      title: lab.members ? 'Only a lab without members can be removed'
-                       : lab.archived_members ? 'People who left are archived in it: it keeps their work for the lab' : 'Remove this lab',
+                       : lab.archived_members ? 'It has archived people: it keeps their work for the lab' : 'Remove this lab',
                      'aria-label': `Remove ${lab.name}`,
                      onclick: () => act(api('DELETE', `api/admin/labs/${lab.id}`), `Removed ${lab.name}.`, tab) }, '✕')));
 }
