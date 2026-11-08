@@ -8,6 +8,31 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.39.0] - 2026-11-08
+Pins MoClo 1.21.0, Sequence Editor 0.23.0, Lab Notebook 0.24.0, Seed Bank 0.13.0, Lab Stocks
+0.21.0, Lab Booking 0.5.0 and Genome Browser 0.5.0; pins lab-suite-portal and lab-suite-backup
+2.39.0.
+
+### Added
+- **The Genome Browser comes with Arabidopsis thaliana.** On a new installation it adds TAIR10
+  with the Araport11 genes and transposons as the suite's reference genome, for every lab and
+  the demo. An installation with a suite TAIR10 already keeps its own. The data is from TAIR
+  (arabidopsis.org) under CC BY 4.0, credited on the Genome Browser's About page and in its
+  NOTICE and README.
+- **MoClo: what an administrator adds is seen by every lab.** A part or backbone a suite
+  administrator adds is public as it is added; what a lab adds stays its chair group's.
+
+### Changed
+- **MoClo: a lab admin shares the chair group's library** with other chair groups (and
+  administrators), no longer any lab lead.
+- **The teaching demo is walled off from the real labs.** Loading the demo records its chair
+  group as the demo's (the `demo.chair_group` setting), and every tool shows the demo's
+  accounts the demo's own data only: nothing of a real lab's, even what is shared with
+  everyone or with a demo lab, no real lab, chair group or account to choose from. What ships
+  with the tools (MoClo's kits, the notebook's protocols, the Genome Browser's Arabidopsis
+  genome) stays. The demo's lab admin cannot add people to its labs. Run `make demo` again
+  after updating to record it.
+
 ## [2.38.1] - 2026-11-07
 Pins Lab Stocks 0.20.2, Seed Bank 0.12.2 and Lab Notebook 0.23.1; pins lab-suite-portal and
 lab-suite-backup 2.38.1.

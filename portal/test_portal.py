@@ -1022,3 +1022,24 @@ def test_labels_are_for_people_who_have_signed_in(portal):
     for res in (client.get('/api/label-stocks'), client.post('/api/label-stocks', json=CRYO_TAG),
                 client.patch('/api/label-stocks/whatever', json=CRYO_TAG), client.delete('/api/label-stocks/whatever')):
         assert res.status_code == 401
+
+
+def test_the_demo_is_kept_to_itself(portal):
+    """The demo's lab admin sees no real account and brings no one into the demo."""
+    module, client, moclo = portal
+    lab = gardiner(module)
+    group = module.labs.create_chair_group('Demo Chair Group', 'boss')
+    module.labs.set_chair_group(lab['id'], group['id'])
+    module.directory.create('fred', 'fred-password-1', is_admin=False)
+    module.labs.set_lab('alice', lab['id'])
+    module.labs.set_role('alice', 'lab_admin', lab['id'])
+    assert not module.labs.in_demo('alice')
+    module.labs.set_demo_chair_group(group['id'])
+    assert module.labs.in_demo('alice') and not module.labs.in_demo('fred')
+    sign_in(client, 'alice', 'alice-password')
+    assert client.get('/api/admin/overview').get_json()['addable'] == []
+    members = f"/api/lab/{lab['id']}/members"
+    assert client.post(members, json={'username': 'fred'}).status_code == 403
+    assert client.post(members, json={'username': 'newbie', 'password': 'newbie-password-1'}).status_code == 403
+    module.labs.set_demo_chair_group(None)
+    assert not module.labs.in_demo('alice')

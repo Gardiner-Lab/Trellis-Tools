@@ -35,6 +35,8 @@ def main() -> None:
     made = {name: labs.by_name(name) or labs.create(name, 'demo setup') for name in LABS}
     for lab in made.values():
         labs.set_chair_group(lab['id'], group['id'])
+    # Marks the chair group as the demo's: every tool keeps the demo's accounts to the demo's data.
+    labs.set_demo_chair_group(group['id'])
     for username, lab, role in ACCOUNTS:
         if directory.find(username) is None:
             directory.create(username, PASSWORD)

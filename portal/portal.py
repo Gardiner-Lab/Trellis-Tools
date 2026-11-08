@@ -50,7 +50,7 @@ from flask import Flask, jsonify, make_response, redirect, request, send_file, s
 import directory
 import labs
 
-APP_VERSION = '2.38.1'
+APP_VERSION = '2.39.0'
 
 # The first administrator's password on a new installation (MoClo creates
 # 'admin' with it). It is published, so it may be used once only: whoever
@@ -586,9 +586,11 @@ def overview(account, role):
         'chair_groups': [g for g in labs.chair_groups() if role == 'admin' or any(
             lab['chair_group_id'] == g['id'] for lab in labs.all_labs() if lab['id'] in led)],
         'users': people,
-        # Accounts a lab admin may add to their labs: anyone but administrators.
+        # Accounts a lab admin may add to their labs: anyone but administrators. Not in the
+        # demo, which sees none of the real accounts (labs.in_demo).
         'addable': sorted(p['username'] for p in directory.all_accounts()
-                          if not p['is_admin'] and p['username'] not in gone) if run else [],
+                          if not p['is_admin'] and p['username'] not in gone)
+                   if run and (role == 'admin' or not labs.in_demo(account['username'])) else [],
         'roles': list(labs.ROLES),
         'lab_roles': ['member', 'lab_lead', 'lab_admin'],
     })
@@ -846,6 +848,9 @@ def add_member(account, role, lab_id):
     refused = _may_manage_members(account, role, lab_id)
     if refused:
         return refused
+    if role != 'admin' and labs.in_demo(account['username']):
+        # The demo is for looking around: it makes no accounts on this server and brings no one in.
+        return jsonify({'error': 'The demo cannot add people to a lab'}), 403
     data = json_body() or {}
     username = str(data.get('username') or '').strip()
     password = str(data.get('password') or '')

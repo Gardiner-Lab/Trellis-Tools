@@ -229,6 +229,48 @@ def set_teaching_accounts(usernames: List[str], shown_password: Optional[str] = 
             conn.execute("DELETE FROM settings WHERE key = 'demo.login_password'")
 
 
+# --- The teaching demo's own corner -------------------------------------------
+#
+# The demo (demo/accounts.py) is one chair group whose labs and accounts are for
+# showing and teaching. It is recorded here as the 'demo.chair_group' setting, so
+# every tool can tell, from suite.db, who is in the demo: someone whose labs are
+# all in that chair group. They see the demo's data and nothing of the real labs'
+# - no suite-wide records, nothing shared in from a real lab, no list of the real
+# accounts - whatever any tool would otherwise show everyone (each tool applies
+# this to its own data, reading the same setting).
+
+def set_demo_chair_group(group_id: Optional[str]) -> None:
+    with connect() as conn:
+        if group_id:
+            conn.execute("INSERT INTO settings (key, value) VALUES ('demo.chair_group', ?) "
+                         'ON CONFLICT(key) DO UPDATE SET value = excluded.value', (str(group_id),))
+        else:
+            conn.execute("DELETE FROM settings WHERE key = 'demo.chair_group'")
+
+
+def demo_chair_group() -> Optional[str]:
+    try:
+        with connect() as conn:
+            return _setting(conn, 'demo.chair_group') or None
+    except sqlite3.Error:
+        return None
+
+
+def demo_lab_ids() -> set:
+    """The ids of the demo's labs: those in its chair group (none when there is no demo)."""
+    group = demo_chair_group()
+    if not group:
+        return set()
+    return {str(lab['id']) for lab in all_labs() if str(lab.get('chair_group_id') or '') == group}
+
+
+def in_demo(username: Optional[str]) -> bool:
+    """In the demo: in a lab, and every lab of theirs one of the demo's."""
+    demo = demo_lab_ids()
+    mine = {str(m['lab_id']) for m in labs_of(username)} if username and demo else set()
+    return bool(mine) and mine <= demo
+
+
 def code_required() -> bool:
     """Off (the Hosting tab, or REQUIRE_REGISTRATION_CODE=false) turns codes off entirely."""
     return not _no(hosting_setting('require_registration_code') or 'true')

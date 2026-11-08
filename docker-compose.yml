@@ -59,7 +59,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.38.1}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.39.0}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -85,7 +85,7 @@ services:
       - "5003"
 
   moclo:
-    image: ghcr.io/gardiner-lab/moclo-library-tool:${MOCLO_VERSION:-1.20.0}
+    image: ghcr.io/gardiner-lab/moclo-library-tool:${MOCLO_VERSION:-1.21.0}
     container_name: moclo-library-tool
     volumes:
       - moclo-data:/data
@@ -123,7 +123,7 @@ services:
       - "5000"
 
   editor:
-    image: ghcr.io/gardiner-lab/plasmid-editor:${EDITOR_VERSION:-0.22.0}
+    image: ghcr.io/gardiner-lab/plasmid-editor:${EDITOR_VERSION:-0.23.0}
     container_name: plasmid-editor
     # MoClo creates its default admin account as it starts. Waiting for it
     # means the editor always sees that account, and replaces its published
@@ -182,7 +182,7 @@ services:
   # the account directory and MoClo's saved assemblies, the editor's plasmids
   # and the suite's labs, and writes only to its own volume.
   notebook:
-    image: ghcr.io/gardiner-lab/lab-notebook:${NOTEBOOK_VERSION:-0.23.1}
+    image: ghcr.io/gardiner-lab/lab-notebook:${NOTEBOOK_VERSION:-0.24.0}
     container_name: lab-notebook
     depends_on:
       moclo:
@@ -218,7 +218,7 @@ services:
   # account directory and labs, the editor's plasmids and the notebook's links,
   # and writes only to its own volume.
   seeds:
-    image: ghcr.io/gardiner-lab/seed-bank:${SEEDS_VERSION:-0.12.2}
+    image: ghcr.io/gardiner-lab/seed-bank:${SEEDS_VERSION:-0.13.0}
     container_name: lab-seeds
     depends_on:
       moclo:
@@ -260,7 +260,7 @@ services:
   # the editor's plasmids, the notebook's links and the Seed Bank's lab codes,
   # and writes only to its own volume.
   stocks:
-    image: ghcr.io/gardiner-lab/lab-stocks:${STOCKS_VERSION:-0.20.2}
+    image: ghcr.io/gardiner-lab/lab-stocks:${STOCKS_VERSION:-0.21.0}
     container_name: lab-stocks
     depends_on:
       moclo:
@@ -299,7 +299,7 @@ services:
   # chair groups they are shared with. It reads the account directory and the
   # suite's labs, and writes only to its own volume; the notebook reads it.
   booking:
-    image: ghcr.io/gardiner-lab/lab-booking:${BOOKING_VERSION:-0.4.0}
+    image: ghcr.io/gardiner-lab/lab-booking:${BOOKING_VERSION:-0.5.0}
     container_name: lab-booking
     depends_on:
       moclo:
@@ -328,7 +328,7 @@ services:
   # its own volume. The web container accepts uploads and enqueues conversion
   # jobs; the heavy toolchain runs in the separate genome-worker below.
   genome-browser:
-    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.4.0}
+    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.5.0}
     container_name: lab-genome
     depends_on:
       moclo:
@@ -369,7 +369,7 @@ services:
   # toolchain never ties up the web workers, and so these tight CPU and memory
   # limits apply to conversion alone.
   genome-worker:
-    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.4.0}
+    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.5.0}
     container_name: lab-genome-worker
     command: ["python3", "worker.py"]
     # The worker runs no web server, so the image's HTTP health probe can
@@ -425,7 +425,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.38.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.39.0}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -464,7 +464,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.38.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.39.0}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -500,7 +500,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.38.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.39.0}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:

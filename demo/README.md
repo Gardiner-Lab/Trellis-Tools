@@ -24,6 +24,17 @@ Both labs are in the **Demo Chair Group**, so each sees the other's seeds,
 stocks and shared equipment, without changing them. Give learners `demo`;
 sign in as `demo-partner` to show the other side of sharing.
 
+**The demo is walled off from the real labs.** Loading it records the Demo
+Chair Group as the demo's (the suite setting `demo.chair_group`), and every tool
+then shows its accounts the demo's own data and nothing else: no record of a real
+lab, even one a real lab shares with a demo lab or shares with everyone (a room
+open to every lab, a public plasmid, a MoClo part or genome an administrator
+added for everyone), no real lab or chair group to share with, and no real
+account in a list of people. What ships with the tools stays, since the demo is
+built from it: MoClo's toolkit and Plant kit, the notebook's own protocols. The
+demo's lab admin cannot add people to its labs or connect eLab. Administrators
+are never counted as in the demo.
+
 The two are **shared teaching accounts**: their passwords cannot be changed
 from the dashboard, so one person cannot lock the others out. Choose another
 password with `DEMO_PASSWORD=... make demo`. To offer the demo to anyone on the
