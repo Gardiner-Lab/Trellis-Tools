@@ -8,6 +8,17 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.43.0] - 2026-11-08
+Pins Genome Browser 0.8.0; pins lab-suite-portal and lab-suite-backup 2.43.0.
+
+### Added
+- **Analyse, in the Genome Browser:** profiles and heatmaps of coverage around genes, transposons or any
+  feature type; difference tracks (mutant minus wild type, log2 ratios) kept as new tracks; replicate checks
+  (correlation and PCA); signal per gene as a CSV table; bar charts of a selection; synteny dot plots. Drawn
+  with deepTools, as jobs the genome worker runs.
+- **The code to make every figure again.** A figure saved to the Lab Notebook gets a page under it with the
+  inputs (download links), the software, and the code and files to make it again outside the suite.
+
 ## [2.42.0] - 2026-11-08
 Pins Genome Browser 0.7.0; pins lab-suite-portal and lab-suite-backup 2.42.0.
 
