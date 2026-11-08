@@ -1043,3 +1043,102 @@ def test_the_demo_is_kept_to_itself(portal):
     assert client.post(members, json={'username': 'newbie', 'password': 'newbie-password-1'}).status_code == 403
     module.labs.set_demo_chair_group(None)
     assert not module.labs.in_demo('alice')
+
+
+def test_a_lab_lead_archives_the_members_of_their_lab(portal):
+    module, client, _ = portal
+    lab, _ = leavers(module)
+    module.directory.create('gus', 'gus-password-1', is_admin=False)
+    module.labs.set_lab('gus', lab['id'])
+    module.labs.set_role('gus', 'lab_lead', lab['id'])
+    module.labs.set_role('erin', 'lab_lead', lab['id'])
+    gus = module.app.test_client()
+    sign_in(gus, 'gus', 'gus-password-1')
+    may = {u['username']: u['can_archive'] for u in gus.get('/api/admin/overview').get_json()['users']}
+    # A member of their lab only: yes. Another lead, the lab admin, someone also in another lab: no.
+    assert may['dave'] and not may['erin'] and not may['alice'] and not may['fred']
+    assert gus.post('/api/people/erin/archive').status_code == 403
+    assert gus.post('/api/people/fred/archive').status_code == 403
+    assert gus.post('/api/people/dave/archive').status_code == 200
+    assert gus.delete('/api/people/dave/archive').status_code == 200
+
+
+def _tool_databases(tmp_path, monkeypatch, dave_id):
+    """Small copies of each tool's database, with some work of dave's (and of erin's, not to be reported)."""
+    def make(name, env, script):
+        path = tmp_path / f'{name}.db'
+        conn = sqlite3.connect(path)
+        conn.executescript(script)
+        conn.commit()
+        conn.close()
+        monkeypatch.setenv(env, str(path))
+    make('notebook', 'NOTEBOOK_DATABASE_PATH', """
+        CREATE TABLE notes (id TEXT, title TEXT, type TEXT, space TEXT, owner TEXT, created_by TEXT,
+                            created_at TEXT, updated_at TEXT, deleted_at TEXT);
+        INSERT INTO notes VALUES ('1', '2026-10-01 Cloning day', 'day', 'notebook', 'dave', 'dave', '2026-10-01', '2026-10-02', NULL),
+                                 ('2', 'Old page', 'page', 'notebook', 'dave', 'dave', '2026-09-01', NULL, '2026-09-02'),
+                                 ('3', 'Miniprep', 'protocol', 'library', NULL, 'dave', '2026-09-05', NULL, NULL),
+                                 ('4', 'Erin page', 'page', 'notebook', 'erin', 'erin', '2026-10-01', NULL, NULL),
+                                 ('5', 'dave', 'notebook', 'notebook', 'dave', NULL, '2026-01-01', NULL, NULL);
+        CREATE TABLE revisions (note_id TEXT, changed_by TEXT);
+        INSERT INTO revisions VALUES ('1', 'dave'), ('1', 'dave');""")
+    make('seeds', 'SEEDS_DATABASE_PATH', """
+        CREATE TABLE lines (code TEXT, name TEXT, lab TEXT, kind TEXT, created_by TEXT, created_at TEXT,
+                            updated_at TEXT, deleted_at TEXT);
+        INSERT INTO lines VALUES ('GL-0001', '35S:tRFP #3', 'Gardiner Lab', 'transgenic', 'dave', '2026-10-03', NULL, NULL);""")
+    make('stocks', 'STOCKS_DATABASE_PATH', """
+        CREATE TABLE primers (code TEXT, name TEXT, lab TEXT, status TEXT, created_by TEXT, created_at TEXT,
+                              updated_at TEXT, deleted_at TEXT);
+        INSERT INTO primers VALUES ('P-0007', 'tRFP fwd', 'Gardiner Lab', 'in stock', 'dave', '2026-09-20', NULL, NULL);""")
+    make('booking', 'BOOKING_DATABASE_PATH', """
+        CREATE TABLE bookings (title TEXT, starts_at TEXT, ends_at TEXT, status TEXT, booked_by TEXT);
+        INSERT INTO bookings VALUES ('Confocal', '2026-10-05T09:00:00Z', '2026-10-05T11:00:00Z', 'booked', 'dave');""")
+    make('genome', 'GENOME_DATABASE_PATH', """
+        CREATE TABLE tracks (name TEXT, owner_lab TEXT, type TEXT, created_by TEXT, created_at TEXT);
+        INSERT INTO tracks VALUES ('RNA-seq rep 1', 'lab-g', 'bigwig', 'dave', '2026-10-06');""")
+    make('parts', 'PARTS_DB', f"""
+        CREATE TABLE parts (name TEXT, part_type TEXT, lab_source TEXT, contributor TEXT, upload_date TEXT);
+        INSERT INTO parts VALUES ('tRFP CDS', 'CDS', 'Gardiner Lab', '{dave_id}', '2026-09-10');""")
+
+
+def test_the_report_of_someones_work(portal, tmp_path, monkeypatch):
+    """Everything dave made, in every tool, for whoever may archive him; a copy kept when he is archived."""
+    module, client, _ = portal
+    leavers(module)
+    _tool_databases(tmp_path, monkeypatch, module.directory.find('dave')['id'])
+    sign_in(client, 'alice', 'alice-password')
+    page = client.get('/api/people/dave/report')
+    assert page.status_code == 200 and page.mimetype == 'text/html'
+    text = page.get_data(as_text=True)
+    for found in ('2026-10-01 Cloning day', 'Miniprep', '35S:tRFP #3', 'tRFP fwd', 'Confocal', 'RNA-seq rep 1',
+                  'tRFP CDS', 'Page revisions saved'):
+        assert found in text, found
+    # Not deleted work, not someone else's, not the notebook itself.
+    assert 'Old page' not in text and 'Erin page' not in text
+    assert '2026-10-06' in text            # his last work
+    csv_text = client.get('/api/people/dave/report?format=csv').get_data(as_text=True)
+    assert csv_text.splitlines()[0] == 'tool,what,code,name,lab,made,changed,status'
+    assert 'Seed Bank,Lines,GL-0001,35S:tRFP #3,Gardiner Lab' in csv_text
+    # A member does not see it.
+    erin = module.app.test_client()
+    sign_in(erin, 'erin', 'erin-password-1')
+    assert erin.get('/api/people/dave/report').status_code == 403
+    # Archiving keeps a copy as it is that day, linked from the report.
+    kept = client.post('/api/people/dave/archive').get_json()['report']
+    assert kept and client.get('/api/people/dave/report?copies=1').get_json()['copies'] == [kept]
+    copy = client.get(f'/api/people/dave/report?copy={kept}')
+    assert copy.status_code == 200 and 'Miniprep' in copy.get_data(as_text=True)
+    assert 'Archived ' in copy.get_data(as_text=True)
+    assert f'?copy={kept}' in client.get('/api/people/dave/report').get_data(as_text=True)
+    assert client.get('/api/people/dave/report?copy=../../suite').status_code == 404
+
+
+def test_a_report_without_the_tools_is_still_made(portal, tmp_path, monkeypatch):
+    module, client, _ = portal
+    leavers(module)
+    for env in ('NOTEBOOK_DATABASE_PATH', 'SEEDS_DATABASE_PATH', 'STOCKS_DATABASE_PATH', 'BOOKING_DATABASE_PATH',
+                'GENOME_DATABASE_PATH', 'PARTS_DB'):
+        monkeypatch.setenv(env, str(tmp_path / 'none.db'))
+    sign_in(client, 'alice', 'alice-password')
+    text = client.get('/api/people/dave/report').get_data(as_text=True)
+    assert 'No work of theirs was found' in text and 'Not found on this server' in text

@@ -9,7 +9,7 @@ RUN apk add --no-cache python3 py3-flask py3-bcrypt py3-gunicorn py3-cryptograph
 # MoClo's volume: a file it created as anyone else would lock them out.
 RUN adduser -D -u 1000 portal && mkdir -p /suite && chown portal:portal /suite
 
-COPY portal.py directory.py labs.py /srv/portal/
+COPY portal.py directory.py labs.py activity.py /srv/portal/
 COPY pages /srv/portal/pages
 WORKDIR /srv/portal
 USER portal

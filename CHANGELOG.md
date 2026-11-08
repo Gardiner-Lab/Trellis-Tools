@@ -8,6 +8,24 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.40.0] - 2026-11-08
+Pins Genome Browser 0.6.0, in which a genome's own chair group can be removed from its sharing
+and added back; pins lab-suite-portal and lab-suite-backup 2.40.0.
+
+### Added
+- **A report of everything someone did, for when they leave.** On the dashboard, **Report** beside a
+  person opens everything they made or own in every tool: notebook pages and protocols, sequences
+  and reads, MoClo parts and constructs, seed lines, lots and plants, stocks and orders, bookings,
+  genomes and tracks, with counts of their observations, edits and revisions. It prints or saves
+  as a PDF, and downloads as a CSV. Archiving someone keeps a copy of it as it was that day
+  (suite-data/reports, backed up with the rest), linked from the report. The portal reads each
+  tool's data read-only for it.
+
+### Changed
+- **Lab leads archive the members of their labs** (and see their reports), not only lab admins: a
+  member whose labs are all ones the lead leads. Lab leads and lab admins are still archived by a
+  lab admin or an administrator.
+
 ## [2.39.0] - 2026-11-08
 Pins MoClo 1.21.0, Sequence Editor 0.23.0, Lab Notebook 0.24.0, Seed Bank 0.13.0, Lab Stocks
 0.21.0, Lab Booking 0.5.0 and Genome Browser 0.5.0; pins lab-suite-portal and lab-suite-backup

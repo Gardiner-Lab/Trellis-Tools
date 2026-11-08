@@ -47,10 +47,11 @@ from urllib.parse import quote, urlsplit
 
 from flask import Flask, jsonify, make_response, redirect, request, send_file, session
 
+import activity
 import directory
 import labs
 
-APP_VERSION = '2.39.0'
+APP_VERSION = '2.40.0'
 
 # The first administrator's password on a new installation (MoClo creates
 # 'admin' with it). It is published, so it may be used once only: whoever
@@ -893,10 +894,11 @@ def set_member_role(account, lab_id, username):
 
 def _may_archive(account, role, target):
     """
-    None if this person may archive (or bring back) the target, else the reason.
-    Administrators, anyone but themselves; a lab admin, someone whose labs are
-    all theirs to run (so no lab admin locks out another lab's people), who is
-    not an administrator or a lab admin.
+    None if this person may archive (or bring back) the target, and see the report
+    of their work, else the reason. Administrators, anyone but themselves. A lab
+    admin, someone whose labs are all theirs to run (so no lab admin locks out
+    another lab's people), who is not an administrator or a lab admin. A lab lead,
+    a member (not a lead) of labs that are all ones they lead.
     """
     if target['username'] == account['username']:
         return 'You cannot archive yourself'
@@ -905,10 +907,23 @@ def _may_archive(account, role, target):
     theirs = labs.labs_of(target['username'])
     if target['is_admin'] or any(m['role'] == 'lab_admin' for m in theirs):
         return 'Only an administrator archives an administrator or a lab admin'
+    if not theirs:
+        return 'Only an administrator archives someone in no lab'
     run = managed_labs(account, role, 'lab_admin')
-    if not theirs or not run or any(m['lab_id'] not in run for m in theirs):
-        return 'Only an administrator, or the lab admin of every lab they are in, archives someone'
-    return None
+    if all(m['lab_id'] in run for m in theirs):
+        return None
+    led = managed_labs(account, role, 'lab_lead')
+    if all(m['lab_id'] in led for m in theirs):
+        if all(m['role'] == 'member' for m in theirs):
+            return None
+        return 'A lab lead archives the members of their labs; a lab admin or an administrator archives a lab lead'
+    return 'Only an administrator, or the lab lead or lab admin of every lab they are in, archives someone'
+
+
+def _work_report(account, target) -> dict:
+    """The report of the target's work in every tool (activity.py), with their labs and whether they left."""
+    person = {'labs': labs.labs_of(target['username']), 'archived': labs.archived().get(target['username'])}
+    return activity.report(target['username'], person, account['username'])
 
 
 @app.route('/api/people/<username>/archive', methods=['POST', 'DELETE'])
@@ -926,11 +941,54 @@ def archive_person(account, role, username):
     refused = _may_archive(account, role, target)
     if refused:
         return jsonify({'error': refused}), 403
+    report = None
     if request.method == 'POST':
         labs.archive(target['username'], account['username'])
+        # A record of their work as it stands the day they leave, kept with the suite's data.
+        try:
+            report = activity.keep_copy(labs.db_path(), _work_report(account, target))
+        except OSError:
+            report = None
     else:
         labs.restore(target['username'])
-    return jsonify({'ok': True, 'archived': labs.archived().get(target['username'])})
+    return jsonify({'ok': True, 'archived': labs.archived().get(target['username']), 'report': report})
+
+
+@app.route('/api/people/<username>/report')
+@require_lab_admin
+def work_report(account, role, username):
+    """
+    Everything they made or own in every tool, as a page to read or print (or, with
+    ?format=csv, a spreadsheet), for whoever may archive them. ?copy= opens the copy
+    kept when they were archived instead of the report as it is now; ?copies=1 lists those.
+    """
+    target, missing = _target_or_404(username)
+    if missing:
+        return missing
+    refused = _may_archive(account, role, target)
+    if refused and refused != 'You cannot archive yourself':
+        return jsonify({'error': refused.replace('archives', 'sees the work of')}), 403
+    fmt = 'csv' if request.args.get('format') == 'csv' else 'html'
+    if request.args.get('copies'):
+        return jsonify({'copies': activity.copies(labs.db_path(), target['username'])})
+    stem = f"work-of-{target['username']}"
+    if request.args.get('copy'):
+        path = activity.copy_file(labs.db_path(), target['username'], request.args['copy'], fmt)
+        if path is None:
+            return jsonify({'error': 'No such copy'}), 404
+        return send_file(path, mimetype='text/csv' if fmt == 'csv' else 'text/html',
+                         as_attachment=fmt == 'csv', download_name=f"{stem}-{request.args['copy']}.{fmt}")
+    rep = _work_report(account, target)
+    rep['copies'] = activity.copies(labs.db_path(), target['username'])
+    if fmt == 'csv':
+        res = make_response(activity.as_csv(rep))
+        res.headers['Content-Type'] = 'text/csv; charset=utf-8'
+        res.headers['Content-Disposition'] = f'attachment; filename="{stem}.csv"'
+    else:
+        res = make_response(activity.as_html(rep))
+        res.headers['Content-Type'] = 'text/html; charset=utf-8'
+    res.headers['Cache-Control'] = 'no-store'
+    return res
 
 
 @app.route('/api/lab/<lab_id>/members/<username>', methods=['DELETE'])

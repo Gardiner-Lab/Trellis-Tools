@@ -434,11 +434,19 @@ const ARCHIVE_HINT = 'They have left: their account, labs and work stay - notebo
 /** An Archive button that asks first, in its cell. */
 function archiveButton(u, cell, reset, tab) {
   return el('button', { class: 'btn small secondary', type: 'button', title: ARCHIVE_HINT, onclick: () => cell.replaceChildren(
-    el('span', { class: 'sub inline' }, `Archive ${u.username}? Their work stays for the lab.`),
+    el('span', { class: 'sub inline' }, `Archive ${u.username}? Their work stays for the lab, and a report of it is kept.`),
     el('button', { class: 'btn small danger', type: 'button',
                    onclick: () => act(api('POST', `api/people/${encodeURIComponent(u.username)}/archive`),
-                     `${u.username} is archived. Their work stays for the lab.`, tab) }, 'Archive'),
+                     `${u.username} is archived. Their work stays for the lab; a report of it is kept, under Report.`, tab) }, 'Archive'),
     el('button', { class: 'btn small secondary', type: 'button', onclick: reset }, 'Keep')) }, 'Archive');
+}
+
+/** A link to the report of everything they made, in every tool: a page to read, print or save, opened alongside. */
+function reportLink(u) {
+  return u.can_archive ? el('a', { class: 'btn small secondary', href: `api/people/${encodeURIComponent(u.username)}/report`,
+    target: '_blank', rel: 'noopener',
+    title: `Everything ${u.username} made in every tool: notebook pages, plasmids, parts, stocks, seeds, bookings, `
+      + 'tracks. To print or save; a CSV is linked from it. A copy is kept when they are archived.' }, 'Report') : null;
 }
 
 function restoreButton(u, tab) {
@@ -457,7 +465,7 @@ function membersCard(data, lab, tab) {
   const removable = (u) => manage && u.username !== data.me.username && !u.is_admin && here(u).role !== 'lab_admin';
   const row = (u) => {
     const actions = el('td', { class: 'actions' });
-    const reset = () => actions.replaceChildren(u.can_archive ? archiveButton(u, actions, () => reset(), tab) : '', ' ', removable(u) ? el('button', {
+    const reset = () => actions.replaceChildren(reportLink(u) || '', ' ', u.can_archive ? archiveButton(u, actions, () => reset(), tab) : '', ' ', removable(u) ? el('button', {
       class: 'btn small secondary', type: 'button', title: 'Take them out of this lab: their account, their own work and their other labs stay',
       onclick: () => actions.replaceChildren(el('span', { class: 'sub inline' }, `Take ${u.username} out of ${lab.name}?`),
         el('button', { class: 'btn small danger', type: 'button',
@@ -467,8 +475,10 @@ function membersCard(data, lab, tab) {
     }, 'Remove from lab') : '');
     reset();
     return el('tr', {}, el('td', {}, u.username), el('td', {}, u.is_admin ? 'Administrator' : ROLE_NAMES[here(u).role]),
-      el('td', {}, euDate(u.created_at)), manage ? actions : null);
+      el('td', {}, euDate(u.created_at)), acting ? actions : null);
   };
+  // A lab lead who does not run the lab still archives its members, and sees their reports.
+  const acting = manage || people.some((u) => u.can_archive);
 
   // Add someone: a new account, or an existing one (which keeps its other labs).
   let add = null;
@@ -503,10 +513,11 @@ function membersCard(data, lab, tab) {
       ? 'As this lab\'s lab admin you add people to it and take them out, and, as its lead, you can open and change '
         + 'its members\' plasmids and read their notebooks. Taking someone out of this lab keeps their account, their '
         + 'own work and their other labs; only an administrator deletes accounts or changes roles.'
-      : 'As this lab\'s lead you can open and change its members\' plasmids, as an administrator can.'),
+      : 'As this lab\'s lead you can open and change its members\' plasmids, as an administrator can. When a member '
+        + 'leaves, archive them: their work stays for the lab, and Report shows everything they made, in every tool.'),
     el('div', { class: 'table-scroll' }, el('table', {},
       el('thead', {}, el('tr', {}, el('th', {}, 'Username'), el('th', {}, 'Role here'), el('th', {}, 'Joined'),
-        manage ? el('th', {}) : null)),
+        acting ? el('th', {}) : null)),
       el('tbody', {}, people.map(row)))),
     left.length ? el('details', { class: 'left-list' },
       el('summary', {}, `Left the lab (${left.length})`),
@@ -514,7 +525,7 @@ function membersCard(data, lab, tab) {
       el('div', { class: 'table-scroll' }, el('table', {},
         el('thead', {}, el('tr', {}, el('th', {}, 'Username'), el('th', {}, 'Role here'), el('th', {}, 'Archived'), el('th', {}))),
         el('tbody', {}, left.map((u) => el('tr', { class: 'archived' }, el('td', {}, u.username),
-          el('td', {}, ROLE_NAMES[here(u).role]), el('td', {}, leftOn(u)), el('td', { class: 'actions' }, restoreButton(u, tab)))))))) : null,
+          el('td', {}, ROLE_NAMES[here(u).role]), el('td', {}, leftOn(u)), el('td', { class: 'actions' }, reportLink(u) || '', ' ', restoreButton(u, tab) || ''))))))) : null,
     manage ? el('h3', {}, `Add someone to ${lab.name}`) : null,
     manage ? el('p', { class: 'hint' }, 'A new account, for someone who has none, or an existing one: someone in '
       + 'another lab keeps that lab too. Anyone with the lab\'s code can also register at /account/register.') : null,
@@ -702,6 +713,7 @@ function userRow(u, data, labOptions, roleOptions, tab) {
   const reset = () => actions.replaceChildren(
     el('button', { class: 'btn small secondary', type: 'button', disabled: self,
                    title: self ? 'Change your own under My account' : null, onclick: setPassword }, 'Set password'),
+    reportLink(u) || '',
     (u.archived ? restoreButton(u, tab) : (u.can_archive ? archiveButton(u, actions, reset, tab) : null)) || '',
     el('button', { class: 'btn small secondary', type: 'button', disabled: self,
                    title: self ? 'You cannot remove your own account' : 'Delete the account. To keep their work for the lab, archive them instead',
