@@ -8,6 +8,13 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.43.1] - 2026-11-08
+Pins Genome Browser 0.8.1; pins lab-suite-portal and lab-suite-backup 2.43.1.
+
+### Fixed
+- **A track's colour as a hex code, from its own menu in the Genome Browser** (Set track color, More Colors):
+  the hex box shows, the panel stays on screen, and the colour is saved with the view at once.
+
 ## [2.43.0] - 2026-11-08
 Pins Genome Browser 0.8.0; pins lab-suite-portal and lab-suite-backup 2.43.0.
 
