@@ -8,6 +8,28 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.46.0] - 2026-11-11
+Pins Genome Browser 0.11.0, Sequence Editor 0.27.0 and Seed Bank 0.15.0; pins lab-suite-portal and
+lab-suite-backup 2.46.0.
+
+### Added
+- **Mark a sequence on the genome.** In the Genome Browser, **+ Mark a sequence** finds a stretch of DNA
+  everywhere on the reference, on both strands, and keeps the places as a track of its own: how to show CRISPR
+  guides, primer sites or any motif the gene annotation does not name. Several at a time, each named, IUPAC
+  codes allowed.
+- **Export the Map** in the Sequence Editor: the map as it is on screen, as SVG for figures or PNG at 2x or 4x
+  for slides and posters.
+- **Did not germinate**, a tick on a seed lot: the lot was sown and nothing came up, which tells a lot whose seed
+  was dead apart from one that simply ran out.
+
+### Fixed
+- **A Gateway LR of two real plasmids found nothing in the Sequence Editor.** Recombination asked for 20 bp
+  shared between the two sites, but an attL and its attR share only the att core: 15 bp at att1, 19 bp at att2.
+  It now finds the att sites itself and measures what the pair really shares, so there is no core length to set;
+  a Gateway pair gives just its two products, the expression clone and the by-product, each saying which att
+  sites it crossed at. Crossovers in backbone the two plasmids merely share are no longer offered, where before
+  they padded the list and could outrank the real ones. The page also explains what a "core" is.
+
 ## [2.45.0] - 2026-11-11
 Pins Genome Browser 0.10.0 and Seed Bank 0.14.0; pins lab-suite-portal and lab-suite-backup 2.45.0.
 
