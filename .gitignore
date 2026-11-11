@@ -18,6 +18,17 @@ pre-install-backup/
 # The https certificates (scripts/make-certs.sh): keys, never committed
 certs/
 certs-ca/
+# ...nor copies of them, nor a key, certificate or request kept anywhere else
+certs*.bak*/
+certs.bak*/
+*.key
+*.pem
+*.p12
+*.pfx
+*.csr
+# Copies of .env carry its secrets too
+.env.bak*
+.env.*.bak
 
 # Previews the icon scripts write next to themselves
 docs/icon/*.html
