@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.44.1] - 2026-11-11
+Pins Genome Browser 0.9.2; pins lab-suite-portal and lab-suite-backup 2.44.1.
+
+### Fixed
+- **A new installation's Genome Browser had no genome.** The bundled Arabidopsis TAIR10 genome with Araport11
+  could not be read inside the image, so it was never added; it is added when the genome worker next starts.
+- **Tagging a genome track with your own Seed Bank records when you are in no lab**: the track's Details now finds
+  them, as the Seed Bank shows them.
+
 ## [2.44.0] - 2026-11-11
 Pins Genome Browser 0.9.0 and Lab Notebook 0.25.0; pins lab-suite-portal and lab-suite-backup 2.44.0.
 
