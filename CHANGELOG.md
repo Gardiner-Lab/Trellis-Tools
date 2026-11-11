@@ -8,6 +8,17 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.44.0] - 2026-11-11
+Pins Genome Browser 0.9.0 and Lab Notebook 0.25.0; pins lab-suite-portal and lab-suite-backup 2.44.0.
+
+### Added
+- **Experiments in the Genome Browser.** A track belongs to an experiment, named when its files are added or
+  later; the track list groups tracks under their experiment, and sorts by name or newest first too.
+- **A track's Details**: its experiment, the Seed Bank lines, seed lots and plants it comes from (tag more from a
+  search of the Seed Bank), and the Lab Notebook pages that link to it.
+- **Notebook pages link to genome tracks.** Type `@` in a page and choose *A genome track*; the link opens the
+  track's genome with it on, and the track lists the page.
+
 ## [2.43.1] - 2026-11-08
 Pins Genome Browser 0.8.1; pins lab-suite-portal and lab-suite-backup 2.43.1.
 
