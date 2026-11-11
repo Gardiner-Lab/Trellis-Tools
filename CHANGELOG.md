@@ -8,6 +8,19 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.45.0] - 2026-11-11
+Pins Genome Browser 0.10.0 and Seed Bank 0.14.0; pins lab-suite-portal and lab-suite-backup 2.45.0.
+
+### Added
+- **Published data in the Genome Browser:** a track names its paper, DOI and GEO accessions, linked, and is found by
+  them.
+- **Removing a track** in the Genome Browser (its own lab or an administrator, after asking; it cannot be undone).
+- **The Seed Bank shows what is tagged on a record:** a line's, lot's or plant's page lists the genomes and tracks
+  tagged with it in the Genome Browser.
+
+### Changed
+- The Genome Browser's experiment headings line up with the track rows.
+
 ## [2.44.1] - 2026-11-11
 Pins Genome Browser 0.9.2; pins lab-suite-portal and lab-suite-backup 2.44.1.
 

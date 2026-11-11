@@ -59,7 +59,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.44.1}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.45.0}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -226,7 +226,7 @@ services:
   # account directory and labs, the editor's plasmids and the notebook's links,
   # and writes only to its own volume.
   seeds:
-    image: ghcr.io/gardiner-lab/seed-bank:${SEEDS_VERSION:-0.13.0}
+    image: ghcr.io/gardiner-lab/seed-bank:${SEEDS_VERSION:-0.14.0}
     container_name: lab-seeds
     depends_on:
       moclo:
@@ -239,8 +239,8 @@ services:
       - suite-data:/suite:ro
       # Glycerol stocks, for a family tree (plasmid -> stocks -> lines -> seeds).
       - stocks-data:/stocks:ro
-      # Genome browser's seed_stock_tags, read for a line's/plant's family tree
-      # (its genome.db, read-only; see genome/CONTRACT_seed_stock_tags.md).
+      # The Genome Browser's data, read-only. A record's page asks the Genome Browser
+      # itself (GENOME_URL) what is tagged with it, so its sharing rules decide.
       - genome-data:/genome:ro
     environment:
       # Opens Word, PowerPoint and Excel attachments in the browser, as PDFs.
@@ -251,6 +251,8 @@ services:
       - SUITE_LOGOUT_URL=/account/logout
       - EDITOR_URL=/editor
       - NOTEBOOK_URL=/notebook
+      # A record's page lists the genomes and tracks tagged with it.
+      - GENOME_URL=/genome
       # Lab Stocks, which copies the seed lots to eLabJournal.
       - STOCKS_URL=/stocks
       # Where phones reach the suite, for the QR codes on labels, e.g.
@@ -336,7 +338,7 @@ services:
   # its own volume. The web container accepts uploads and enqueues conversion
   # jobs; the heavy toolchain runs in the separate genome-worker below.
   genome-browser:
-    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.9.2}
+    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.10.0}
     container_name: lab-genome
     depends_on:
       moclo:
@@ -377,7 +379,7 @@ services:
   # toolchain never ties up the web workers, and so these tight CPU and memory
   # limits apply to conversion alone.
   genome-worker:
-    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.9.2}
+    image: ghcr.io/gardiner-lab/genome-browser:${GENOME_VERSION:-0.10.0}
     container_name: lab-genome-worker
     command: ["python3", "worker.py"]
     # The worker runs no web server, so the image's HTTP health probe can
@@ -433,7 +435,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.44.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.45.0}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -472,7 +474,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.44.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.45.0}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -508,7 +510,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.44.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.45.0}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:
