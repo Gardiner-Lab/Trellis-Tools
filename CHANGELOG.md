@@ -8,6 +8,17 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.49.0] - 2026-11-12
+Pins Lab Notebook 0.26.0; pins lab-suite-portal and lab-suite-backup 2.49.0.
+
+### Added
+- **A week's to-do list in the Lab Notebook.** On a day page, **＋ Week's to-do** makes one list for the week, a
+  page shown under every day of it. Tasks can tag (`@`) plasmids, stocks, seed lots, tracks and pages, are ticked
+  by whom and when, and can be moved on to next week's list.
+
+### Changed
+- The notebook's **Start today** button is now **Today**.
+
 ## [2.48.1] - 2026-11-12
 Pins Sequence Editor 0.28.3; pins lab-suite-portal and lab-suite-backup 2.48.1.
 
