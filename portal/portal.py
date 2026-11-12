@@ -51,7 +51,7 @@ import activity
 import directory
 import labs
 
-APP_VERSION = '2.49.0'
+APP_VERSION = '2.49.1'
 
 # The first administrator's password on a new installation (MoClo creates
 # 'admin' with it). It is published, so it may be used once only: whoever

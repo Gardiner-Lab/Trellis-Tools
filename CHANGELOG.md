@@ -8,6 +8,13 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.49.1] - 2026-11-12
+Pins Sequence Editor 0.28.4 and Lab Notebook 0.26.1; pins lab-suite-portal and lab-suite-backup 2.49.1.
+
+### Fixed
+- **Bisulfite primers:** each tip on why pairs were lost says which converted strand it is about.
+- **Weekly to-do list:** the block's buttons no longer cover the first task's **→ Next week**.
+
 ## [2.49.0] - 2026-11-12
 Pins Lab Notebook 0.26.0; pins lab-suite-portal and lab-suite-backup 2.49.0.
 
