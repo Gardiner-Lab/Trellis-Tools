@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.48.1] - 2026-11-12
+Pins Sequence Editor 0.28.3; pins lab-suite-portal and lab-suite-backup 2.48.1.
+
+### Added
+- **Why no bisulfite pair passed.** The Sequence Editor's bisulfite primers now say where the candidates
+  were lost when no pair (or too few) passes: how many each cutoff turned down, per converted strand, the
+  step where they ran out, and which option to change.
+
 ## [2.48.0] - 2026-11-12
 Pins Sequence Editor 0.28.2 and Genome Browser 0.12.1; pins lab-suite-portal and lab-suite-backup 2.48.0.
 The editor is given the Genome Browser's address (`GENOME_URL=/genome`).
