@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.47.0] - 2026-11-12
+Pins Lab Stocks 0.22.0; pins lab-suite-portal and lab-suite-backup 2.47.0.
+
+### Added
+- **A glycerol stock without a plasmid.** In Lab Stocks, **＋ Glycerol stock** now offers **Without a plasmid
+  of the library**, for an empty strain or a plasmid that is not in the Sequence Editor. What it holds can be
+  said in words or left empty, and a plasmid linked later.
+
 ## [2.46.0] - 2026-11-11
 Pins Genome Browser 0.11.0, Sequence Editor 0.27.0 and Seed Bank 0.15.0; pins lab-suite-portal and
 lab-suite-backup 2.46.0.
