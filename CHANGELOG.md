@@ -8,6 +8,19 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.48.0] - 2026-11-12
+Pins Sequence Editor 0.28.2 and Genome Browser 0.12.1; pins lab-suite-portal and lab-suite-backup 2.48.0.
+The editor is given the Genome Browser's address (`GENOME_URL=/genome`).
+
+### Added
+- **Bisulfite primers** in the Sequence Editor, under Analysis: primer pairs for bisulfite PCR, for DNA
+  methylation, rewritten from Colette L. Picard's `design_bisulfite_primers.py`, in the selection or the
+  whole sequence, for either converted strand. Each pair can be saved to Lab Stocks, annotated, or added
+  to the notebook.
+- **Checked against a genome:** the pairs are checked with BLAST against a reference genome of the Genome
+  Browser (Arabidopsis unless you choose another), and only pairs whose primers bind there once are
+  suggested. Every genome is prepared for this in the background as soon as it is added.
+
 ## [2.47.0] - 2026-11-12
 Pins Lab Stocks 0.22.0; pins lab-suite-portal and lab-suite-backup 2.47.0.
 
