@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.49.4] - 2026-11-13
+Pins Genome Browser 0.12.2; pins lab-suite-portal and lab-suite-backup 2.49.4.
+
+### Fixed
+- **Marking a sequence on a large genome** no longer ends in `JSON.parse: unexpected character`. A
+  search that will take a while now waits in the genome worker's queue, saying how many sequences,
+  how large the genome and roughly how long, and showing the time taken against that estimate.
+  Short searches still answer at once.
+
 ## [2.49.3] - 2026-11-13
 Pins MoClo Library Tool 1.22.1; pins lab-suite-portal and lab-suite-backup 2.49.3.
 
