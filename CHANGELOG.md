@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.49.3] - 2026-11-13
+Pins MoClo Library Tool 1.22.1; pins lab-suite-portal and lab-suite-backup 2.49.3.
+
+### Fixed
+- **`demo/demo.sh load` on a fresh install.** It stopped at the MoClo step because the demo account could not
+  see MoClo's demo linkers and acceptors. MoClo 1.22.1 marks them (and the bundled Plant MoClo kit parts) as the
+  kits it ships with, which is what the demo's accounts see.
+
 ## [2.49.2] - 2026-11-13
 Pins Sequence Editor 0.28.5; pins lab-suite-portal and lab-suite-backup 2.49.2.
 
