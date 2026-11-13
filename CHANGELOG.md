@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.49.2] - 2026-11-13
+Pins Sequence Editor 0.28.5; pins lab-suite-portal and lab-suite-backup 2.49.2.
+
+### Fixed
+- **Bisulfite primers: credit.** The Sequence Editor now has a NOTICE, and its Help page says the tool is
+  rewritten from `design_bisulfite_primers.py` v1.1, a later version of v1.0 by Colette L. Picard
+  (06/05/2016).
+
 ## [2.49.1] - 2026-11-12
 Pins Sequence Editor 0.28.4 and Lab Notebook 0.26.1; pins lab-suite-portal and lab-suite-backup 2.49.1.
 
