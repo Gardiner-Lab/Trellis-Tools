@@ -113,6 +113,7 @@
       "image": "/account/icons/genome.svg",
       "colour": "#b4533a",
       "href": "/genome/",
+      "manifest": "/genome/suite-manifest.json",
       "summary": "Load reference genomes, build a library of aligned tracks, and explore them in an IGV-style browser — then export the view as a publication figure.",
       "points": [
         "Reference genomes with aligned BigWig, BED and GFF tracks, navigated by locus or region",

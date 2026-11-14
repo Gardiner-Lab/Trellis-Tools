@@ -8,6 +8,29 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.50.0] - 2026-11-14
+Pins Genome Browser 0.13.0; pins lab-suite-portal and lab-suite-backup 2.50.0.
+
+### Added
+- **My jobs on the dashboard:** the Genome Browser's analyses and uploads you started, each with a progress
+  bar (its step, how far it has got, how many are ahead of it), and finished ones open in the browser with a
+  click. The Genome Browser now lists a dashboard tab (`landing/tools.json`: `/genome/suite-manifest.json`).
+- **Profile choices:** leave out features with no signal in the window, and count stretches without data as
+  zero; both on by default, as before. The figure says which were used.
+- **Features at chromosome ends:** a profile names the features whose window runs past a chromosome end, with
+  a CSV of how far, so you can judge whether it matters.
+
+### Fixed
+Where a coverage track has no reads, the Genome Browser's analyses treated it as no data instead of zero.
+Run earlier results again for the corrected ones.
+- **Heatmaps from "Profile around features, and heatmap"** are no longer blacked out, and the profile above
+  them no longer reads higher than the signal.
+- **Replicate check:** correlations no longer read too high. Bins where only one replicate had reads were
+  dropped; they are now kept.
+- **Signal per feature (table), the bar chart of a selection and the circos rings** show each region's true
+  mean: a gene with 10 over half its length read 10, not 5. A feature without reads reads 0, not blank.
+- **A profile's label** counts the features drawn ("gene (30,831 of 33,318)"), not those found.
+
 ## [2.49.4] - 2026-11-13
 Pins Genome Browser 0.12.2; pins lab-suite-portal and lab-suite-backup 2.49.4.
 

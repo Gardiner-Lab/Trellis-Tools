@@ -221,6 +221,7 @@ and Admin pages, and the backup console, send people there.
 | --- | --- | --- |
 | My account: lab, role, change password | everyone | the suite |
 | My parts, Saved constructs | everyone | MoClo |
+| My jobs: analyses and uploads running, with progress bars | everyone | the Genome Browser |
 | Labs: codes, and a lead's own members | administrators, lab leads | the suite |
 | Accounts: add, remove, set a password, lab and role | administrators | the suite |
 | MoClo library: parts, cassettes, backbones, plasmids | administrators | MoClo |
