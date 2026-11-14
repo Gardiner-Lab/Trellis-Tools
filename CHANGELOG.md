@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.52.1] - 2026-11-15
+Pins Genome Browser 0.15.2; pins lab-suite-portal and lab-suite-backup 2.52.1.
+
+### Fixed
+- **The Genome Browser's search box found genes in the genome's own annotation only when it was igv.org's
+  too** (an Araport11 gene such as AT3G01835 was not found on TAIR10), and told igv.org every name searched. It
+  asks the suite now, and finds a gene by its name, symbol, alias or full name (FLC, FLOWERING LOCUS C).
+
 ## [2.52.0] - 2026-11-15
 Pins Genome Browser 0.15.1; pins lab-suite-portal and lab-suite-backup 2.52.0.
 
