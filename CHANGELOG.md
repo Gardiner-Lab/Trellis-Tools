@@ -8,6 +8,19 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.51.0] - 2026-11-14
+Pins Genome Browser 0.14.0; pins lab-suite-portal and lab-suite-backup 2.51.0.
+
+### Added
+- **Methylation tracks are measured as a methylation level, with nothing to set up.** The Genome Browser
+  recognises a coverage track of per-cytosine calls as methylation (the track list says so; its lab can
+  change it in the track's Details). Every analysis then averages over the cytosines with data, leaving out
+  the stretches between them, and without the minus sign many GEO files give minus-strand cytosines, which
+  made a CG's two cytosines cancel to 0. Help, *Methylation tracks*, says what is still the lab's to get right.
+- **Tracks already there are checked on update:** the genome worker looks at each existing coverage track
+  when it starts, and its log names the methylation tracks it found.
+- My jobs says it lists only your own jobs.
+
 ## [2.50.0] - 2026-11-14
 Pins Genome Browser 0.13.0; pins lab-suite-portal and lab-suite-backup 2.50.0.
 
