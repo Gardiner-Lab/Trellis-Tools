@@ -8,6 +8,20 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.52.0] - 2026-11-15
+Pins Genome Browser 0.15.1; pins lab-suite-portal and lab-suite-backup 2.52.0.
+
+### Added
+- **New Genome Browser analyses:** methylation against expression (box plots by expression group, every gene as
+  a point, a profile of each group, and the genes ranked); methylation and expression per gene across samples
+  (each gene's correlation over matched samples, ranked, with p- and q-values); and a fingerprint quality check.
+- Profiles centred on a feature's middle or a peak's summit; a heatmap's k-means clusters as gene lists, and kept
+  as tracks.
+- Help, *Reading the analyses*: what each analysis tells you, when to use it, how to read it and what can mislead.
+
+### Fixed
+- Grouping a heatmap's rows into clusters failed.
+
 ## [2.51.2] - 2026-11-14
 Pins Genome Browser 0.14.2; pins lab-suite-portal and lab-suite-backup 2.51.2.
 
