@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.51.1] - 2026-11-14
+Pins Genome Browser 0.14.1; pins lab-suite-portal and lab-suite-backup 2.51.1.
+
+### Fixed
+- **A methylation track's heatmap was all grey.** Nearly every gene has some steps with no cytosine measured,
+  and deepTools greyed out every pixel that touched one. For the heatmap only, an empty step now takes its value
+  from the measured steps beside it in the same feature; the profile and the matrix download stay as measured,
+  and the figure's caption says so.
+
+### Changed
+- The heatmap's track names are turned 45 degrees, so long names no longer run into each other.
+
 ## [2.51.0] - 2026-11-14
 Pins Genome Browser 0.14.0; pins lab-suite-portal and lab-suite-backup 2.51.0.
 
