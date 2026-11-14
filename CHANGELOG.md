@@ -8,6 +8,13 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.51.2] - 2026-11-14
+Pins Genome Browser 0.14.2; pins lab-suite-portal and lab-suite-backup 2.51.2.
+
+### Fixed
+- **A methylation heatmap shows its per-track profiles again.** 2.51.1 left them out, as deepTools would have
+  drawn them from the heatmap's filled-in values; they are back, drawn from the values as measured.
+
 ## [2.51.1] - 2026-11-14
 Pins Genome Browser 0.14.1; pins lab-suite-portal and lab-suite-backup 2.51.1.
 
