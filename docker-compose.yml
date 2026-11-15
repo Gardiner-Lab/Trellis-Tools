@@ -435,6 +435,8 @@ services:
     environment:
       - URL_PREFIX=/terminal
       - NOTEBOOK_URL=/notebook
+      # Where it writes each session's transcript, as the session's member, inside the suite's network.
+      - NOTEBOOK_INTERNAL=http://notebook:5004/notebook
       - TZ=${TZ:-Europe/Amsterdam}
       # Sessions run until their member ends them, however long no browser is attached (0). Set hours to
       # close sessions left that long; what runs in tmux on the machine carries on even then.

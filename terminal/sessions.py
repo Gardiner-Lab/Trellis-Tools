@@ -50,6 +50,14 @@ class Session:
         self.reason = ''
         self.cols, self.rows = cols, rows
         self.buffer = bytearray()
+        # The transcript for the notebook (notebook.py): how much output there has been, how much of it is
+        # recorded already, and the pages written.
+        self.total = 0
+        self.recorded_at = 0
+        self.recorded: List[dict] = []
+        self.record_day = time.strftime('%Y-%m-%d', time.localtime(self.started))
+        self.was_open = False
+        self.on_end = None              # called with the session when it has ended (Sessions sets it)
         self.socket = None              # the attached browser's websocket, if any
         self.keys: 'asyncio.Queue[str]' = asyncio.Queue()
         self.conn: Optional[asyncssh.SSHClientConnection] = None
@@ -62,9 +70,11 @@ class Session:
         return {'id': self.id, 'connection': self.connection['id'], 'label': self.label, 'target': self.target,
                 'state': self.state, 'reason': self.reason, 'attached': self.socket is not None,
                 'started': time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(self.started)),
-                'day': time.strftime('%Y-%m-%d', time.localtime(self.started))}
+                'day': time.strftime('%Y-%m-%d', time.localtime(self.started)),
+                'record': bool(self.connection.get('record')), 'recorded': self.recorded}
 
     async def output(self, data: bytes) -> None:
+        self.total += len(data)
         self.buffer += data
         if len(self.buffer) > SCROLLBACK:
             del self.buffer[:len(self.buffer) - SCROLLBACK]
@@ -97,6 +107,19 @@ class Session:
         await socket.send_str(json.dumps({'t': 'status', **self.info()}))
         if self.buffer:
             await socket.send_bytes(bytes(self.buffer))
+
+    def unrecorded(self):
+        """The output since the last page written, and whether its start is gone (more than the buffer since)."""
+        first = self.total - len(self.buffer)        # where the buffer starts in all the output there has been
+        start = max(self.recorded_at, first)
+        return bytes(self.buffer[start - first:]), self.recorded_at < first
+
+    def mark_recorded(self, page: Optional[dict] = None) -> None:
+        """After a page is written (or there was nothing to write). A failed one leaves the output to save by hand."""
+        if page is None or 'note' in page:
+            self.recorded_at = self.total
+        if page is not None:
+            self.recorded.append(page)
 
     def detach(self, socket) -> None:
         if self.socket is socket:
@@ -223,6 +246,7 @@ class Session:
             self.process = await self.conn.create_process(command, term_type='xterm-256color',
                                                           term_size=(self.cols, self.rows), encoding=None)
             self.state = 'open'
+            self.was_open = True
             await self.status()
 
             async def pump(stream):
@@ -250,6 +274,16 @@ class Session:
                 await self.say(f'\n[{self.reason}]\n')
             except Exception:
                 pass
+            if self.on_end is not None:
+                try:
+                    page = await self.on_end(self)
+                    if page and 'note' in page:
+                        await self.say(f"[Recorded in your Lab Notebook, under {page['day']}.]\n")
+                    elif page:
+                        await self.say(f"[Could not record it in your Lab Notebook ({page['error']}): "
+                                       f"use Save the session's text.]\n")
+                except Exception:
+                    pass
             await self.status()
 
     async def close(self, reason: str = 'Closed from the browser.') -> None:
@@ -277,6 +311,8 @@ class Sessions:
         # 0: a session runs until its member ends it or it ends on the machine, however long nobody
         # looks at it; leaving work running to come back to from elsewhere is the point.
         self.keep = keep_hours * 3600
+        self.on_end = None              # given each new session: what to do when it ends (record it)
+        self.daily = None               # called with a session and the day to record (notebook.record)
         self.per_member = per_member
         self.total = total
 
@@ -298,6 +334,7 @@ class Sessions:
         if len([s for s in self.all.values() if s.state != 'closed']) >= self.total:
             raise SessionError('The terminal is at its limit of open sessions: try again later.')
         s = Session(owner, connection, cols, rows)
+        s.on_end = self.on_end
         self.all[s.id] = s
         s.task = asyncio.ensure_future(s.run())
         return s
@@ -313,6 +350,17 @@ class Sessions:
                 await s.close(f'Closed after {self.keep / 3600:g} hours with no browser attached.')
             elif s.state == 'closed' and idle > 3600:
                 self.all.pop(s.id, None)
+
+    async def record_days(self, today: Optional[str] = None) -> None:
+        """Past midnight: each session still running that records to the notebook gets the day just past."""
+        today = today or time.strftime('%Y-%m-%d')
+        for s in list(self.all.values()):
+            if s.state == 'open' and s.record_day != today and s.connection.get('record') and self.daily is not None:
+                day, s.record_day = s.record_day, today
+                try:
+                    await self.daily(s, day)
+                except Exception:
+                    pass
 
     async def close_all(self) -> None:
         for s in list(self.all.values()):

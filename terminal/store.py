@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS connections (
     username TEXT NOT NULL,
     label TEXT NOT NULL,
     tmux INTEGER NOT NULL DEFAULT 1, -- keep the work in tmux on the machine, to come back to
+    record INTEGER NOT NULL DEFAULT 1, -- write the transcript to the member's notebook when a session ends
     created_at TEXT NOT NULL,
     last_used TEXT
 );
@@ -48,6 +49,9 @@ class Store:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._db() as conn:
             conn.executescript(SCHEMA)
+            columns = {r[1] for r in conn.execute('PRAGMA table_info(connections)')}
+            if 'record' not in columns:          # a database from before recording
+                conn.execute('ALTER TABLE connections ADD COLUMN record INTEGER NOT NULL DEFAULT 1')
 
     def _db(self) -> sqlite3.Connection:
         conn = sqlite3.connect(str(self.path), timeout=30)
@@ -99,20 +103,22 @@ class Store:
                 'JOIN hosts h ON h.id = c.host_id WHERE c.id = ? AND c.owner = ?', (conn_id, owner)).fetchone()
         return dict(row) if row else None
 
-    def add_connection(self, owner: str, host_id: str, username: str, label: str, tmux: bool) -> dict:
+    def add_connection(self, owner: str, host_id: str, username: str, label: str, tmux: bool,
+                       record: bool = True) -> dict:
         conn_id = uuid.uuid4().hex
         with self._db() as conn:
-            conn.execute('INSERT INTO connections (id, owner, host_id, username, label, tmux, created_at) '
-                         'VALUES (?, ?, ?, ?, ?, ?, ?)', (conn_id, owner, host_id, username, label, int(tmux), _now()))
+            conn.execute('INSERT INTO connections (id, owner, host_id, username, label, tmux, record, created_at) '
+                         'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                         (conn_id, owner, host_id, username, label, int(tmux), int(record), _now()))
         return self.connection(conn_id, owner)
 
     def update_connection(self, conn_id: str, owner: str, **fields) -> Optional[dict]:
-        allowed = {k: v for k, v in fields.items() if k in ('username', 'label', 'tmux') and v is not None}
+        allowed = {k: v for k, v in fields.items() if k in ('username', 'label', 'tmux', 'record') and v is not None}
         if allowed:
             sets = ', '.join(f'{k} = ?' for k in allowed)
             with self._db() as conn:
                 conn.execute(f'UPDATE connections SET {sets} WHERE id = ? AND owner = ?',
-                             (*[int(v) if k == 'tmux' else v for k, v in allowed.items()], conn_id, owner))
+                             (*[int(v) if k in ('tmux', 'record') else v for k, v in allowed.items()], conn_id, owner))
         return self.connection(conn_id, owner)
 
     def used(self, conn_id: str) -> None:

@@ -73,6 +73,7 @@ def home(prefix: str, notebook: str, user: str, admin: bool) -> str:
         <label>Your user name there <input name="username" required maxlength="64" autocomplete="off" spellcheck="false"></label>
         <label>Name it <input name="label" maxlength="80" placeholder="optional"></label>
         <label class="term-check"><input type="checkbox" name="tmux" checked> Keep my work in tmux on the machine</label>
+        <label class="term-check"><input type="checkbox" name="record" checked> Record each session in my notebook when it ends</label>
         <button class="tt-btn" type="submit">Save the connection</button>
       </form>
       <p class="term-error" id="connection-error" role="alert" hidden></p>
@@ -180,6 +181,12 @@ def help_page(prefix: str) -> str:
     </ul>
     <p>Either goes under the day the session started, unless you choose another day (for a script, the day it was last
       changed is offered too).</p>
+    <p><b>Recorded for you</b>, with <i>Record each session in my notebook</i> (on unless you turn it off for a connection):
+      when a session ends (you end it, it ends on the machine, or the suite restarts), what it showed is written to a page
+      under today in your notebook, with the text attached. A session still running at midnight gets the day just past
+      written under that day, and carries on; each day's page says where it continues. Passwords and codes typed at login
+      are never shown in the terminal, so never in the record, but whatever the machine prints is. Full-screen programs (an
+      editor, <code>top</code>) come out jumbled in it. Up to the last megabyte of output is kept for it.</p>
 
     <h2 id="safe">What is and is not kept</h2>
     <ul>

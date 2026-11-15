@@ -25,6 +25,7 @@ from typing import Optional
 import asyncssh
 from aiohttp import WSMsgType, web
 
+import notebook
 import pages
 from sessions import SessionError, Sessions
 from store import Store
@@ -100,6 +101,7 @@ def connection_view(c: dict, request) -> dict:
     prefix = request.app['prefix']
     return {'id': c['id'], 'label': c['label'], 'username': c['username'], 'host_id': c['host_id'],
             'host_name': c['host_name'], 'hostname': c['hostname'], 'port': c['port'], 'tmux': bool(c['tmux']),
+            'record': bool(c.get('record', 1)),
             'created_at': c['created_at'], 'last_used': c['last_used'], 'link': f'{prefix}/c/{c["id"]}'}
 
 
@@ -119,6 +121,12 @@ def create_app(data_dir: Optional[Path] = None, prefix: Optional[str] = None, ke
     # the lab's machines. 0 turns it off.
     app['idle'] = float(idle_seconds if idle_seconds is not None else
                         float(os.environ.get('IDLE_MINUTES', '5')) * 60)
+    # Each session's transcript, to its member's notebook when it ends, and at midnight while it runs.
+    async def at_end(session):
+        if session.was_open and session.connection.get('record'):
+            return await notebook.record(session, final=True)
+    app['sessions'].on_end = at_end
+    app['sessions'].daily = lambda session, day: notebook.record(session, final=False, day=day)
     app['login'] = os.environ.get('SUITE_LOGIN_URL', '/account/login')
     app['logout'] = os.environ.get('SUITE_LOGOUT_API', '/account/api/logout')
 
@@ -165,7 +173,8 @@ async def _json_body(request, handler):
 async def _start_tidying(app):
     async def loop():
         while True:
-            await asyncio.sleep(300)
+            await asyncio.sleep(60)
+            await app['sessions'].record_days()
             await app['sessions'].tidy()
     app['tidier'] = asyncio.ensure_future(loop())
 
@@ -294,6 +303,8 @@ def _connection_fields(b: dict, store: Store, partial: bool = False):
         out['label'] = str(b.get('label') or '').strip()[:80]
     if 'tmux' in b or not partial:
         out['tmux'] = b.get('tmux') is not False
+    if 'record' in b or not partial:
+        out['record'] = b.get('record') is not False
     if not partial:
         if store.host(str(b.get('host_id') or '')) is None:
             raise ValueError('Choose one of the lab’s machines.')
@@ -310,7 +321,7 @@ async def api_add_connection(request):
         return fail(400, str(exc))
     host = store.host(f['host_id'])
     label = f['label'] or f"{f['username']}@{host['name']}"
-    c = store.add_connection(user, f['host_id'], f['username'], label, f['tmux'])
+    c = store.add_connection(user, f['host_id'], f['username'], label, f['tmux'], f['record'])
     return web.json_response(connection_view(c, request), status=201)
 
 

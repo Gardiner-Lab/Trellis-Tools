@@ -9,7 +9,9 @@ import pytest
 from aiohttp.test_utils import TestClient, TestServer
 
 import app as terminal_app
+import notebook as notebook_module
 import sessions as sessions_module
+from aiohttp import web
 
 PASSWORD = 'secret'
 
@@ -65,10 +67,12 @@ async def shell(process):
 class World:
     """An SSH server, the account directory (ada is an administrator, bob and cy are not) and the service."""
 
-    def __init__(self, tmp_path, server=Server, idle=None):
+    def __init__(self, tmp_path, server=Server, idle=None, notebook_up=True):
         self.tmp = tmp_path
         self.server = server
         self.idle = idle
+        self.notebook_up = notebook_up
+        self.pages = []                    # what the stand-in notebook was given, page by page
 
     async def __aenter__(self):
         users = self.tmp / 'moclo.db'
@@ -88,12 +92,49 @@ class World:
             self.server, '127.0.0.1', 0, server_host_keys=[self.key], process_factory=shell,
             sftp_factory=lambda chan: asyncssh.SFTPServer(chan, chroot=str(files).encode()))
         self.port = self.ssh.sockets[0].getsockname()[1]
+        self.notebook = TestClient(TestServer(self._notebook()))
+        await self.notebook.start_server()
+        self.mp.setenv('NOTEBOOK_INTERNAL', str(self.notebook.make_url('/notebook')).rstrip('/'))
         self.app = terminal_app.create_app(self.tmp / 'data', prefix='/terminal', keep_hours=1, idle_seconds=self.idle)
         self.client = TestClient(TestServer(self.app))
         await self.client.start_server()
         return self
 
+    def _notebook(self):
+        """The Lab Notebook's API, as much of it as a transcript page needs, keeping what it is given."""
+        pages = self.pages
+        up = self.notebook_up
+
+        async def days(request):
+            if not up:
+                return web.json_response({'error': 'down for maintenance'}, status=503)
+            body = await request.json()
+            return web.json_response({'note': {'id': 'day-' + body['date']}}, status=201)
+
+        async def notes(request):
+            body = await request.json()
+            pages.append({'member': request.headers.get('X-Suite-User'), 'day': body['parent_id'][4:],
+                          'title': body['title']})
+            return web.json_response({'note': {'id': f'page{len(pages)}', 'version': 1}}, status=201)
+
+        async def attachments(request):
+            form = await request.post()
+            pages[-1]['file'] = form['file'].file.read().decode()
+            return web.json_response({'attachments': [{'id': 'a1', 'name': form['file'].filename}]}, status=201)
+
+        async def put(request):
+            pages[-1]['html'] = (await request.json())['content'][0]['html']
+            return web.json_response({'note': {}})
+
+        nb = web.Application()
+        nb.router.add_post('/notebook/api/days', days)
+        nb.router.add_post('/notebook/api/notes', notes)
+        nb.router.add_post('/notebook/api/notes/{id}/attachments', attachments)
+        nb.router.add_put('/notebook/api/notes/{id}', put)
+        return nb
+
     async def __aexit__(self, *exc):
+        await self.notebook.close()
         await self.client.close()
         self.ssh.close()
         self.mp.undo()
@@ -107,9 +148,10 @@ class World:
         assert res.status == 201, await res.text()
         return await res.json()
 
-    async def connection(self, user='bob', host=None, tmux=False):
+    async def connection(self, user='bob', host=None, tmux=False, record=True):
         host = host or await self.machine()
-        res = await self.call('POST', '/api/connections', user, {'host_id': host['id'], 'username': user, 'tmux': tmux})
+        res = await self.call('POST', '/api/connections', user, {'host_id': host['id'], 'username': user, 'tmux': tmux,
+                                                                 'record': record})
         assert res.status == 201, await res.text()
         return await res.json()
 
@@ -408,4 +450,93 @@ def test_what_was_printed_while_away_is_shown_on_return(tmp_path):
             out, _ = await read_until(ws, 'step 199 done')
             assert 'Welcome to the test HPC' in out and 'step 0 done' in out
             await ws.close()
+    run(go())
+
+
+
+# --- the transcript, in the notebook ------------------------------------------------------------------
+
+def test_plain_text_of_a_terminals_output():
+    raw = (b'\x1b]0;bob@hpc: ~\x07\x1b[1;32mbob@hpc\x1b[0m:~$ ls\r\n'
+           b'progress 10%\rprogress 55%\rprogress 100%\r\n'
+           b'tpyo\b\b\bypo\r\n\r\n\r\n\r\ndone\r\n')
+    assert notebook_module.plain_text(raw) == 'bob@hpc:~$ ls\nprogress 100%\ntypo\n\ndone'
+
+
+async def _logged_in(w, record=True):
+    c = await w.connection('bob', record=record)
+    ws = await w.socket(connection=c['id'])
+    await read_until(ws, 'assword:')
+    await send(ws, PASSWORD + '\r')
+    await read_until(ws, 'Welcome')
+    return c, ws
+
+
+def test_a_session_is_recorded_in_the_notebook_under_today_when_it_ends(tmp_path):
+    async def go():
+        async with World(tmp_path) as w:
+            c, ws = await _logged_in(w)
+            assert c['record'] is True
+            await send(ws, 'align reads\r')
+            await read_until(ws, 'ALIGN READS')
+            await send(ws, 'exit\r')
+            out, _ = await read_until(ws, 'Recorded in your Lab Notebook')
+            [page] = w.pages
+            assert page['member'] == 'bob' and page['day'] == time.strftime('%Y-%m-%d')
+            assert page['title'].startswith('Terminal: bob@Test HPC, ' + time.strftime('%Y-%m-%d'))
+            assert 'ALIGN READS' in page['file'] and PASSWORD not in page['file']
+            assert 'ALIGN READS' in page['html'] and 'data-attachment="a1"' in page['html']
+            listed = await (await w.call('GET', '/api/sessions')).json()
+            assert listed[0]['recorded'] == [{'day': time.strftime('%Y-%m-%d'), 'note': 'page1'}]
+    run(go())
+
+
+def test_nothing_is_recorded_when_turned_off_or_when_the_login_failed(tmp_path):
+    async def go():
+        async with World(tmp_path) as w:
+            c, ws = await _logged_in(w, record=False)
+            await send(ws, 'exit\r')
+            await read_until(ws, 'ended on the machine')
+            c2 = await w.connection('bob', host={'id': c['host_id']})
+            ws = await w.socket(connection=c2['id'])
+            for _ in range(sessions_module.MAX_TRIES):
+                await read_until(ws, 'assword:')
+                await send(ws, 'wrong\r')
+            await read_until(ws, 'Login refused')
+            await asyncio.sleep(0.2)
+            assert w.pages == []
+    run(go())
+
+
+def test_a_session_running_past_midnight_records_each_day(tmp_path):
+    async def go():
+        async with World(tmp_path) as w:
+            c, ws = await _logged_in(w)
+            await send(ws, 'monday work\r')
+            await read_until(ws, 'MONDAY WORK')
+            [session] = w.app['sessions'].mine('bob')
+            first_day = session.record_day
+            await w.app['sessions'].record_days(today='2099-01-01')      # midnight passes
+            assert [p['day'] for p in w.pages] == [first_day]
+            assert 'MONDAY WORK' in w.pages[0]['file'] and 'still running' in w.pages[0]['html']
+            await send(ws, 'tuesday work\r')
+            await read_until(ws, 'TUESDAY WORK')
+            await send(ws, 'exit\r')
+            await read_until(ws, 'Recorded in your Lab Notebook')
+            second = w.pages[1]
+            assert 'TUESDAY WORK' in second['file'] and 'MONDAY WORK' not in second['file']   # only what is new
+            assert '(continued)' in second['title'] and 'Continued from the page of' in second['html']
+    run(go())
+
+
+def test_when_the_notebook_cannot_be_reached_the_text_is_kept_to_save_by_hand(tmp_path):
+    async def go():
+        async with World(tmp_path, notebook_up=False) as w:
+            c, ws = await _logged_in(w)
+            await send(ws, 'exit\r')
+            out, _ = await read_until(ws, "use Save the session's text")
+            assert 'down for maintenance' in out
+            [session] = w.app['sessions'].mine('bob')
+            data, _ = session.unrecorded()
+            assert b'Welcome to the test HPC' in data                       # not taken as recorded
     run(go())

@@ -21,6 +21,11 @@ and the project uses [semantic versioning](https://semver.org/).
     those left longer, if wanted).
   - *Save a script to the notebook* (a file on the machine, read over SFTP) and *Save the session's text*, each as a
     page under the day the session started (or another day chosen).
+  - **Each session recorded in the notebook:** when a session ends, what it showed is written to a page under today in
+    its member's notebook, with the text attached; a session still running at midnight gets the day just past under
+    that day. On unless turned off per connection. Written by the service as the session's member, to the notebook
+    inside the suite (`NOTEBOOK_INTERNAL`); if the notebook cannot be reached, the terminal says so and the text stays
+    to save by hand.
   - **The page locks after 5 minutes away; the session does not stop:** a terminal page with no key pressed and no mouse movement for 5 minutes lets go of
     the session, clears the screen and signs out of the suite (warning 30 s before), so an unattended computer is not a
     way onto the lab's machines; signing in again goes straight back to the session, which carried on. The server holds

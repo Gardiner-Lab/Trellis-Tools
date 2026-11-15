@@ -11,7 +11,7 @@ RUN apk add --no-cache python3 py3-aiohttp py3-asyncssh ca-certificates tzdata
 # Its own volume only; it writes nothing elsewhere and reads the account directory (who is an administrator).
 RUN adduser -D -u 1000 terminal && mkdir -p /terminal-data && chown terminal:terminal /terminal-data
 
-COPY app.py pages.py sessions.py store.py /srv/terminal/
+COPY app.py notebook.py pages.py sessions.py store.py /srv/terminal/
 COPY static /srv/terminal/static
 COPY --from=xterm /x/node_modules/@xterm/xterm/lib/xterm.js /srv/terminal/static/xterm/xterm.js
 COPY --from=xterm /x/node_modules/@xterm/xterm/css/xterm.css /srv/terminal/static/xterm/xterm.css

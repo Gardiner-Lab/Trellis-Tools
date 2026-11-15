@@ -80,7 +80,10 @@
             make('span', { class: 'term-name', text: s.label }), make('span', { class: 'term-target', text: s.target }),
             make('span', { class: 'term-badge ' + s.state, text: { open: 'open', login: 'logging in', connecting: 'connecting', closed: 'ended' }[s.state] || s.state }),
             make('span', { class: 'term-hint', text: 'since ' + s.started.replace('T', ' ').slice(0, 16) + (s.attached ? ' · open in a browser' : '') }),
-            make('span', { class: 'term-spacer' }), open, end]);
+            make('span', { class: 'term-spacer' })].concat((s.recorded || []).map(function (r) {
+              return r.note ? make('a', { class: 'term-hint', href: NOTEBOOK + '/#note=' + encodeURIComponent(r.note), target: '_blank',
+                rel: 'noopener', text: 'notebook, ' + r.day }) : make('span', { class: 'term-hint', text: 'not recorded: ' + r.error });
+            })).concat([open, end]));
         }));
       });
     }
@@ -95,6 +98,7 @@
             make('a', { class: 'term-name', href: c.link, text: c.label }),
             make('span', { class: 'term-target', text: c.username + '@' + c.hostname + (c.port !== 22 ? ':' + c.port : '') }),
             c.tmux ? make('span', { class: 'term-badge', text: 'tmux' }) : null,
+            c.record ? make('span', { class: 'term-badge', text: 'recorded in notebook' }) : null,
             make('span', { class: 'term-spacer' }),
             make('a', { class: 'tt-btn primary', href: c.link, text: 'Open' }), copyBtn,
             make('button', { class: 'tt-btn danger', type: 'button', text: 'Remove', onclick: function () {
@@ -158,7 +162,7 @@
       var f = e.target;
       showError('connection-error', null);
       call('POST', API + '/connections', { host_id: f.host_id.value, username: f.username.value.trim(), label: f.label.value.trim(),
-        tmux: f.tmux.checked }).then(function () { f.username.value = ''; f.label.value = ''; return loadConnections(); })
+        tmux: f.tmux.checked, record: f.record.checked }).then(function () { f.username.value = ''; f.label.value = ''; return loadConnections(); })
         .catch(function (err) { showError('connection-error', err); });
     });
 
