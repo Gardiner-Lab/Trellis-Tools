@@ -59,7 +59,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.53.0}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.53.1}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -424,7 +424,7 @@ services:
   # list and each member's saved connections; it reads the account directory to
   # know who is an administrator.
   terminal:
-    image: ghcr.io/gardiner-lab/hpc-terminal:${TERMINAL_VERSION:-0.1.0}
+    image: ghcr.io/gardiner-lab/hpc-terminal:${TERMINAL_VERSION:-0.1.1}
     container_name: lab-terminal
     depends_on:
       moclo:
@@ -448,6 +448,15 @@ services:
       - SUITE_LOGOUT_API=/account/api/logout
     # A relay: tens of sessions take well under this.
     mem_limit: 512m
+    # It holds people's sessions on the lab's machines: as little as it needs. Its code cannot be changed while
+    # it runs, it has no Linux capabilities, and nothing in it can gain privileges; it writes only its volume.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     expose:
       - "5009"
@@ -473,7 +482,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.1}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -513,7 +522,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.1}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -550,7 +559,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.1}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:

@@ -8,6 +8,19 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.53.1] - 2026-11-15
+Pins HPC Terminal 0.1.1; pins lab-suite-portal and lab-suite-backup 2.53.1.
+
+### Fixed
+- **The HPC Terminal's login** works with every OpenSSH server tried: it was cut off while the password was typed,
+  could not log in to servers without PAM, and could mistranslate a typed password. The login's questions are now
+  asked in a box of the page's own.
+
+### Added
+- The HPC Terminal keeps an audit log, pauses a member after 5 refused logins within 10 minutes, and tells a browser
+  that loses its session where it went.
+- The terminal service runs read-only, with no Linux capabilities and no privilege escalation.
+
 ## [2.53.0] - 2026-11-15
 Pins HPC Terminal 0.1.0 (new); pins lab-suite-portal and lab-suite-backup 2.53.0.
 

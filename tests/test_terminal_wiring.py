@@ -47,6 +47,8 @@ def test_the_service_uses_the_suites_image_and_its_own_volume():
     assert 'moclo-data:/moclo:ro' in svc['volumes']           # who is an administrator, read only
     assert not any(str(v).startswith('/') or 'docker.sock' in str(v) for v in svc['volumes'])
     assert 'ports' not in svc                                 # only through the proxy
+    assert svc['read_only'] is True and svc['cap_drop'] == ['ALL']
+    assert 'no-new-privileges:true' in svc['security_opt']
     assert 'terminal-data' in compose['volumes']
 
 
