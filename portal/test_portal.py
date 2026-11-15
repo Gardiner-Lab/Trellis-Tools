@@ -1142,3 +1142,54 @@ def test_a_report_without_the_tools_is_still_made(portal, tmp_path, monkeypatch)
     sign_in(client, 'alice', 'alice-password')
     text = client.get('/api/people/dave/report').get_data(as_text=True)
     assert 'No work of theirs was found' in text and 'Not found on this server' in text
+
+
+# --- the HPC Terminal's networks ------------------------------------------------------------------
+
+def test_the_hpc_terminals_networks_start_from_env_and_are_set_on_the_dashboard(tmp_path, monkeypatch, capsys):
+    import json
+    import sqlite3
+    moclo = tmp_path / 'moclo.db'
+    make_directory(moclo, [('boss', 'boss-password', True), ('alice', 'alice-password', False)])
+    module = load(monkeypatch, moclo, tmp_path / 'missing.db', tmp_path / 'suite.db',
+                  TERMINAL_ALLOWED_NETWORKS='192.168.2.0/24', TERMINAL_NETWORK_LIMIT='')
+    client = module.app.test_client()
+    sign_in(client, 'alice', 'alice-password')
+    assert client.get('/api/admin/terminal').status_code == 403
+    assert client.put('/api/admin/terminal', json={'networks': [{'network': '10.0.0.0/8'}]}).status_code == 403
+    client.post('/logout')
+    sign_in(client, 'boss', 'boss-password')
+    data = client.get('/api/admin/terminal').get_json()
+    assert data['from'] == 'env' and data['networks'] == [{'network': '192.168.2.0/24', 'note': 'from .env'}]
+    saved = client.put('/api/admin/terminal', json={'networks': [
+        {'network': '192.168.2.19', 'note': 'Tower'}, {'network': '131.211.32.0/24', 'note': 'UU'},
+        {'network': '131.211.32.5/24', 'note': 'the same network again'}]}).get_json()
+    assert saved['from'] == 'dashboard' and saved['changed']['by'] == 'boss'
+    assert saved['networks'] == [{'network': '192.168.2.19/32', 'note': 'Tower'}, {'network': '131.211.32.0/24', 'note': 'UU'}]
+    assert "boss set the HPC Terminal's networks: 192.168.2.19/32, 131.211.32.0/24" in capsys.readouterr().out
+    # What the terminal reads (netpolicy.from_dashboard): the same key, a list of {network, note}.
+    conn = sqlite3.connect(tmp_path / 'suite.db')
+    stored = json.loads(conn.execute("SELECT value FROM settings WHERE key = 'terminal.networks'").fetchone()[0])
+    conn.close()
+    assert [e['network'] for e in stored] == ['192.168.2.19/32', '131.211.32.0/24']
+    for bad, why in (('0.0.0.0/0', 'every address'), ('10.0.0.0/4', 'too wide'), ('127.0.0.1', 'the server itself'),
+                     ('169.254.169.254', 'link-local'), ('lab cluster', 'not a network')):
+        res = client.put('/api/admin/terminal', json={'networks': [{'network': bad}]})
+        assert res.status_code == 400 and why in res.get_json()['error'], bad
+    assert client.put('/api/admin/terminal', json={'networks': []}).status_code == 400
+    back = client.put('/api/admin/terminal', json={'networks': None}).get_json()
+    assert back['from'] == 'env' and back['networks'][0]['network'] == '192.168.2.0/24'
+
+
+def test_the_servers_limit_bounds_the_dashboards_networks(tmp_path, monkeypatch):
+    moclo = tmp_path / 'moclo.db'
+    make_directory(moclo, [('boss', 'boss-password', True)])
+    module = load(monkeypatch, moclo, tmp_path / 'missing.db', tmp_path / 'suite.db',
+                  TERMINAL_NETWORK_LIMIT='192.168.0.0/16')
+    client = module.app.test_client()
+    sign_in(client, 'boss', 'boss-password')
+    data = client.get('/api/admin/terminal').get_json()
+    assert data['from'] == 'default' and data['limit'] == ['192.168.0.0/16']
+    res = client.put('/api/admin/terminal', json={'networks': [{'network': '131.211.32.0/24'}]})
+    assert res.status_code == 400 and 'outside what the server allows' in res.get_json()['error']
+    assert client.put('/api/admin/terminal', json={'networks': [{'network': '192.168.2.0/24'}]}).status_code == 200

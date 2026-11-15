@@ -1166,6 +1166,61 @@ def change_hosting(account):
 
 
 # ---------------------------------------------------------------------------
+# The HPC Terminal's networks
+# ---------------------------------------------------------------------------
+
+def _terminal_networks() -> dict:
+    saved = labs.terminal_networks()
+    env = os.environ.get('TERMINAL_ALLOWED_NETWORKS', '').strip()
+    return {
+        'networks': saved['networks'] if saved else
+        [{'network': n.strip(), 'note': 'from .env'} for n in env.split(',') if n.strip()],
+        'from': 'dashboard' if saved else ('env' if env else 'default'),
+        'changed': saved['changed'] if saved else None,
+        'limit': [str(n) for n in labs.terminal_network_limit()],
+    }
+
+
+@app.route('/api/admin/terminal')
+@require_admin
+def terminal_networks(account):
+    return jsonify(_terminal_networks())
+
+
+@app.route('/api/admin/terminal', methods=['PUT'])
+@require_admin
+def change_terminal_networks(account):
+    """
+    {"networks": [{"network": "192.168.2.0/24", "note": "lab LAN"}, ...]}: the networks the HPC Terminal may
+    connect to, at once. {"networks": null} goes back to .env's (TERMINAL_ALLOWED_NETWORKS).
+    """
+    data = json_body()
+    if data is None or 'networks' not in data:
+        return jsonify({'error': 'Send the networks as JSON'}), 400
+    if data['networks'] is None:
+        labs.set_terminal_networks(None, account['username'])
+        print(f"[portal] {account['username']} set the HPC Terminal's networks back to .env's", flush=True)
+        return jsonify(_terminal_networks())
+    if not isinstance(data['networks'], list) or not data['networks']:
+        return jsonify({'error': 'Name at least one network (or go back to .env\u2019s)'}), 400
+    cleaned, seen = [], set()
+    for entry in data['networks'][:100]:
+        if not isinstance(entry, dict):
+            return jsonify({'error': 'Each network is {"network": ..., "note": ...}'}), 400
+        try:
+            net = labs.clean_terminal_network(str(entry.get('network') or ''))
+        except ValueError as exc:
+            return jsonify({'error': str(exc)}), 400
+        if net not in seen:
+            seen.add(net)
+            cleaned.append({'network': net, 'note': str(entry.get('note') or '').strip()[:120]})
+    labs.set_terminal_networks(cleaned, account['username'])
+    print(f"[portal] {account['username']} set the HPC Terminal's networks: "
+          f"{', '.join(e['network'] for e in cleaned)}", flush=True)
+    return jsonify(_terminal_networks())
+
+
+# ---------------------------------------------------------------------------
 # The rest
 # ---------------------------------------------------------------------------
 

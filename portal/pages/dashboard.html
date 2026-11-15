@@ -380,6 +380,72 @@ const hostingTab = {
   },
 };
 
+/* --- HPC Terminal ------------------------------------------------------------ */
+
+/*
+ * The networks the HPC Terminal may connect to: a machine an administrator adds there must be on one of
+ * them. Read by the terminal on every check, so a change counts at once.
+ */
+const terminalTab = {
+  id: 'terminal', title: 'HPC Terminal', glyph: 'link', section: 'admin', roles: ['admin'],
+  async show(panel) {
+    let data;
+    try { data = await api('GET', 'api/admin/terminal'); } catch (err) {
+      panel.replaceChildren(el('div', { class: 'alert bad' }, err.message));
+      return;
+    }
+    const rows = el('tbody');
+    const addRow = (network = '', note = '') => {
+      const tr = el('tr', {},
+        el('td', {}, el('input', { class: 'net', value: network, placeholder: '192.168.2.0/24', spellcheck: 'false',
+                                   autocomplete: 'off', 'aria-label': 'Network' })),
+        el('td', {}, el('input', { class: 'note', value: note, maxlength: 120, placeholder: 'e.g. lab cluster',
+                                   'aria-label': 'Note' })),
+        el('td', {}, el('button', { class: 'btn small secondary', type: 'button', onclick: () => tr.remove() }, 'Remove')));
+      rows.append(tr);
+    };
+    data.networks.forEach((n) => addRow(n.network, n.note));
+    if (!data.networks.length) addRow();
+    const source = data.from === 'dashboard'
+      ? `Set here${data.changed ? `, last by ${data.changed.by} on ${data.changed.at}` : ''}.`
+      : data.from === 'env' ? 'From .env (TERMINAL_ALLOWED_NETWORKS) until you save a list here.'
+        : 'Nothing set yet: the terminal allows private networks only (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 100.64.0.0/10).';
+    const form = el('form', {},
+      el('table', { class: 'table' },
+        el('thead', {}, el('tr', {}, el('th', {}, 'Network'), el('th', {}, 'Note'), el('th', {}))), rows),
+      el('div', { class: 'add-row' },
+        el('button', { class: 'btn secondary', type: 'button', onclick: () => addRow() }, 'Add a network'),
+        el('button', { class: 'btn', type: 'submit' }, 'Save'),
+        data.from === 'dashboard' ? el('button', { class: 'btn secondary', type: 'button',
+          onclick: () => act(api('PUT', 'api/admin/terminal', { networks: null }), 'Back to the .env value.', this) },
+          'Use .env') : null));
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const networks = [...rows.querySelectorAll('tr')]
+        .map((tr) => ({ network: tr.querySelector('.net').value.trim(), note: tr.querySelector('.note').value.trim() }))
+        .filter((n) => n.network);
+      act(api('PUT', 'api/admin/terminal', { networks }), 'Saved. The terminal uses it at once.', this);
+    });
+    panel.replaceChildren(
+      el('div', { class: 'card' },
+        el('h2', {}, 'Networks the HPC Terminal may reach'),
+        el('p', { class: 'hint' }, 'The terminal only connects to machines on these networks, checked when a machine is added on '
+          + 'the HPC Terminal page and again on every connection. Name the lab’s HPC networks, as narrowly as you can: a '
+          + 'whole subnet as 192.168.2.0/24, one machine as 192.168.2.19.'),
+        el('p', { class: 'hint' }, source),
+        data.limit.length ? el('p', { class: 'hint' }, `The server allows no more than ${data.limit.join(', ')} `
+          + '(TERMINAL_NETWORK_LIMIT in .env).') : null,
+        form),
+      el('div', { class: 'card' },
+        el('h2', {}, 'Set on the server'),
+        el('p', { class: 'hint' }, 'These stay in .env on the machine, then: docker compose up -d.'),
+        el('dl', { class: 'facts' },
+          el('dt', {}, 'TERMINAL_NETWORK_LIMIT'), el('dd', {}, 'networks no list here may go beyond, so a stolen administrator '
+            + 'sign-in cannot point the terminal anywhere else'),
+          el('dt', {}, 'Firewall'), el('dd', {}, 'let the terminal’s container out only to the same networks (its README)'))));
+  },
+};
+
 /* --- Labs ------------------------------------------------------------------ */
 
 const labsTab = {
@@ -783,7 +849,7 @@ async function copyText(code) {
   }
   $('who').textContent = `${me.username} · ${ROLE_NAMES[me.role]}`;
   // Signed in with the default password: only My account, to change it.
-  const own = me.must_change ? [accountTab] : [accountTab, labsTab, usersTab, hostingTab].filter((t) => allowed(t.roles));
+  const own = me.must_change ? [accountTab] : [accountTab, labsTab, usersTab, hostingTab, terminalTab].filter((t) => allowed(t.roles));
   const fromTools = me.must_change ? [] : (await toolTabs()).map(frameTab);
   // Your own things first, then administration; the suite's tabs lead each.
   tabs = [...own, ...fromTools].sort((a, b) =>

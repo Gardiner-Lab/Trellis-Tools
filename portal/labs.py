@@ -196,6 +196,78 @@ def set_hosting(key: str, value: Optional[str]) -> None:
                          'ON CONFLICT(key) DO UPDATE SET value = excluded.value', (f'hosting.{key}', value))
 
 
+# ---------------------------------------------------------------------------
+# The HPC Terminal's networks
+# ---------------------------------------------------------------------------
+#
+# The networks the HPC Terminal may connect to, set by an administrator on the
+# dashboard (settings 'terminal.networks', JSON: [{"network", "note"}], with who
+# changed it last in 'terminal.networks.changed'). The terminal reads them from
+# here on every check. Until one is saved, TERMINAL_ALLOWED_NETWORKS in .env
+# counts, else private networks only. TERMINAL_NETWORK_LIMIT in .env, if set, is
+# a bound no entry here may go beyond: set on the server, not here.
+
+TERMINAL_NETWORKS = 'terminal.networks'
+
+
+def terminal_network_limit() -> list:
+    import ipaddress
+    raw = os.environ.get('TERMINAL_NETWORK_LIMIT', '').strip()
+    return [ipaddress.ip_network(p.strip(), strict=False) for p in raw.split(',') if p.strip()]
+
+
+def clean_terminal_network(text: str) -> str:
+    """A network in CIDR form (a single address is /32 or /128); ValueError with a reason when it may not be one."""
+    import ipaddress
+    text = (text or '').strip()
+    try:
+        net = ipaddress.ip_network(text, strict=False)
+    except ValueError:
+        raise ValueError(f'{text or "(empty)"} is not a network: write it as 192.168.2.0/24, or one address as 192.168.2.19')
+    if net.prefixlen == 0:
+        raise ValueError(f'{net} is every address there is: name the lab\u2019s networks')
+    if net.version == 4 and net.prefixlen < 8:
+        raise ValueError(f'{net} is too wide: name the lab\u2019s networks (/8 or narrower)')
+    if net.is_loopback or net.is_link_local or net.is_multicast or net.is_unspecified:
+        raise ValueError(f'{net} is the server itself, link-local or multicast: not a network of machines')
+    limit = terminal_network_limit()
+    if limit and not any(net.version == l.version and net.subnet_of(l) for l in limit):
+        raise ValueError(f'{net} is outside what the server allows (TERMINAL_NETWORK_LIMIT: '
+                         f'{", ".join(str(l) for l in limit)})')
+    return str(net)
+
+
+def terminal_networks() -> Optional[dict]:
+    """What the dashboard has saved: {'networks': [{network, note}], 'changed': {by, at}}, or None."""
+    import json
+    try:
+        with connect() as conn:
+            raw = _setting(conn, TERMINAL_NETWORKS)
+            changed = _setting(conn, TERMINAL_NETWORKS + '.changed')
+    except sqlite3.Error:
+        return None
+    if raw is None:
+        return None
+    try:
+        return {'networks': json.loads(raw), 'changed': json.loads(changed) if changed else None}
+    except ValueError:
+        return None
+
+
+def set_terminal_networks(entries: Optional[list], by: str) -> None:
+    """Saves the list (already cleaned); None goes back to .env's."""
+    import json
+    import time
+    with connect() as conn:
+        if entries is None:
+            conn.execute('DELETE FROM settings WHERE key IN (?, ?)', (TERMINAL_NETWORKS, TERMINAL_NETWORKS + '.changed'))
+            return
+        for key, value in ((TERMINAL_NETWORKS, json.dumps(entries)),
+                           (TERMINAL_NETWORKS + '.changed', json.dumps({'by': by, 'at': time.strftime('%Y-%m-%d %H:%M')}))):
+            conn.execute('INSERT INTO settings (key, value) VALUES (?, ?) '
+                         'ON CONFLICT(key) DO UPDATE SET value = excluded.value', (key, value))
+
+
 def teaching_accounts() -> set:
     """Shared accounts for teaching (demo/accounts.py): their passwords are not changed from the dashboard."""
     try:

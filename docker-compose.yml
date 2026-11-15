@@ -90,6 +90,10 @@ services:
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
       - REQUIRE_REGISTRATION_CODE=${REQUIRE_REGISTRATION_CODE:-true}
       - SUITE_PUBLIC_URL=${SUITE_PUBLIC_URL:-}
+      # The HPC Terminal's networks, for its dashboard tab: .env's list until one is saved there, and the bound
+      # no list there may go beyond.
+      - TERMINAL_ALLOWED_NETWORKS=${TERMINAL_ALLOWED_NETWORKS:-}
+      - TERMINAL_NETWORK_LIMIT=${TERMINAL_NETWORK_LIMIT:-}
     restart: unless-stopped
     expose:
       - "5003"
@@ -451,6 +455,8 @@ services:
       # networks only, never the internet. For a limit that holds even if the service were compromised, allow its
       # container out only to the same networks in the server's firewall too.
       - ALLOWED_NETWORKS=${TERMINAL_ALLOWED_NETWORKS:-}
+      # Networks no list on the dashboard may go beyond (optional; set here on the server, not there).
+      - NETWORK_LIMIT=${TERMINAL_NETWORK_LIMIT:-}
       - NOTEBOOK_URL=/notebook
       # Where it writes each session's transcript, as the session's member, inside the suite's network.
       - NOTEBOOK_INTERNAL=http://notebook:5004/notebook
