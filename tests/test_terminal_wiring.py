@@ -52,6 +52,16 @@ def test_the_service_uses_the_suites_image_and_its_own_volume():
     assert 'terminal-data' in compose['volumes']
 
 
+def test_it_is_on_a_network_of_its_own_with_only_the_proxy_and_the_notebook():
+    services = _compose()['services']
+    on = {name for name, s in services.items() if 'terminal' in (s.get('networks') or [])}
+    assert on == {'terminal', 'proxy', 'notebook'}
+    assert services['terminal']['networks'] == ['terminal']          # not the suite's default network
+    env = services['terminal']['environment']
+    assert 'ALLOWED_NETWORKS=${TERMINAL_ALLOWED_NETWORKS:-}' in env
+    assert 'suite-data:/suite:ro' in services['terminal']['volumes']
+
+
 def test_the_landing_page_lists_it():
     tools = json.loads((ROOT / 'landing' / 'tools.json').read_text(encoding='utf-8'))['tools']
     t = next(t for t in tools if t['id'] == 'terminal')

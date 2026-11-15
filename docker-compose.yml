@@ -34,6 +34,10 @@ services:
       # This machine's certificate and the lab authority's (scripts/make-certs.sh);
       # the authority's key stays in certs-ca/, which is not mounted.
       - ./certs:/etc/nginx/certs:ro
+    # And the HPC Terminal's own network, to reach it.
+    networks:
+      - default
+      - terminal
     depends_on:
       - portal
       - moclo
@@ -222,6 +226,8 @@ services:
     networks:
       - default
       - converter
+      # The HPC Terminal writes each session's transcript here.
+      - terminal
 
   # The seed bank, at /seeds/: plant lines, seed lots and plants, their
   # lineage, phenotypes with photos and 3D scans, and labels. It reads the
@@ -432,8 +438,19 @@ services:
     volumes:
       - terminal-data:/terminal-data
       - moclo-data:/moclo:ro
+      # Who leads which lab, for the overview of open sessions.
+      - suite-data:/suite:ro
+    # Its own network, with only the proxy (to be reached) and the notebook (to record to): not a way to the
+    # suite's other services.
+    networks:
+      - terminal
     environment:
       - URL_PREFIX=/terminal
+      - SUITE_DATABASE_PATH=/suite/suite.db
+      # The networks it may connect to, comma-separated (the lab's HPC subnet, say 192.168.2.0/24). Unset: private
+      # networks only, never the internet. For a limit that holds even if the service were compromised, allow its
+      # container out only to the same networks in the server's firewall too.
+      - ALLOWED_NETWORKS=${TERMINAL_ALLOWED_NETWORKS:-}
       - NOTEBOOK_URL=/notebook
       # Where it writes each session's transcript, as the session's member, inside the suite's network.
       - NOTEBOOK_INTERNAL=http://notebook:5004/notebook
@@ -583,6 +600,8 @@ networks:
   # The converter's own: internal, so nothing on it reaches the internet.
   converter:
     internal: true
+  # The HPC Terminal's: the terminal, the proxy and the notebook only.
+  terminal:
 
 volumes:
   # Created by whichever tool starts first and shared by both.
