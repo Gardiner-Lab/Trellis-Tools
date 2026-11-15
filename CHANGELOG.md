@@ -8,6 +8,9 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.53.0] - 2026-11-15
+Pins HPC Terminal 0.1.0 (new); pins lab-suite-portal and lab-suite-backup 2.53.0.
+
 ### Added
 - **HPC Terminal** (`/terminal/`; its own repository, [hpc-terminal](https://github.com/Gardiner-Lab/hpc-terminal),
   pinned as `TERMINAL_VERSION`, 0.1.0): a terminal in the browser on the lab's HPC machines, over SSH.
