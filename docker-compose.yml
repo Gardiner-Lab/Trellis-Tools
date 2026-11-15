@@ -424,7 +424,7 @@ services:
   # list and each member's saved connections; it reads the account directory to
   # know who is an administrator.
   terminal:
-    image: ghcr.io/gardiner-lab/lab-suite-terminal:${SUITE_VERSION:-2.53.0}
+    image: ghcr.io/gardiner-lab/hpc-terminal:${TERMINAL_VERSION:-0.1.0}
     container_name: lab-terminal
     depends_on:
       moclo:

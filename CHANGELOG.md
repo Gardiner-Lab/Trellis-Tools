@@ -9,8 +9,8 @@ and the project uses [semantic versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- **HPC Terminal** (`/terminal/`, a new service, `lab-suite-terminal`): a terminal in the browser on the lab's HPC
-  machines, over SSH.
+- **HPC Terminal** (`/terminal/`; its own repository, [hpc-terminal](https://github.com/Gardiner-Lab/hpc-terminal),
+  pinned as `TERMINAL_VERSION`, 0.1.0): a terminal in the browser on the lab's HPC machines, over SSH.
   - Members save connections (their user name on one of the lab's machines) and open them from a link, which can be
     bookmarked or put on a notebook page.
   - Logging in happens in the terminal: the password, and a one-time code if asked, go to the machine and are never

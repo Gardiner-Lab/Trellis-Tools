@@ -42,14 +42,12 @@ def test_the_terminal_block_upgrades_to_a_websocket():
 def test_the_service_uses_the_suites_image_and_its_own_volume():
     compose = _compose()
     svc = compose['services']['terminal']
-    assert svc['image'].startswith('ghcr.io/gardiner-lab/lab-suite-terminal:${SUITE_VERSION:-')
+    assert svc['image'].startswith('ghcr.io/gardiner-lab/hpc-terminal:${TERMINAL_VERSION:-')   # its own repository
     assert 'terminal-data:/terminal-data' in svc['volumes']
     assert 'moclo-data:/moclo:ro' in svc['volumes']           # who is an administrator, read only
     assert not any(str(v).startswith('/') or 'docker.sock' in str(v) for v in svc['volumes'])
     assert 'ports' not in svc                                 # only through the proxy
     assert 'terminal-data' in compose['volumes']
-    version = svc['image'].rsplit(':-', 1)[1].rstrip('}')
-    assert compose['services']['portal']['image'].endswith(f':-{version}}}')
 
 
 def test_the_landing_page_lists_it():

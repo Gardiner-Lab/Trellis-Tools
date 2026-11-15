@@ -14,7 +14,7 @@ landing page that lists the tools:
 | `/stocks/` | [Lab Stocks](https://github.com/Gardiner-Lab/lab-stocks) | its own |
 | `/booking/` | [Booking](https://github.com/Gardiner-Lab/lab-booking) | its own |
 | `/genome/` | [Genome Browser](https://github.com/Gardiner-Lab/genome-browser) | its own |
-| `/terminal/` | HPC Terminal: a terminal on the lab's HPC machines over SSH, whose sessions keep running with the browser closed | this repository |
+| `/terminal/` | [HPC Terminal](https://github.com/Gardiner-Lab/hpc-terminal): a terminal on the lab's HPC machines over SSH, whose sessions keep running with the browser closed | its own |
 | none (inside only) | File converter: LibreOffice, so Word, PowerPoint and Excel attachments open in the browser as PDFs | [Gotenberg](https://gotenberg.dev) |
 
 Each tool keeps its own published image and updates independently — nothing is

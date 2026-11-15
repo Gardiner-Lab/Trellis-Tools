@@ -19,12 +19,6 @@ jobs:
           pip install flask bcrypt pytest pyyaml requests
           pytest -q portal/ backup/ tests/
 
-      - name: HPC Terminal tests
-        run: |
-          # The versions Alpine 3.20 gives the image.
-          pip install aiohttp==3.9.3 asyncssh==2.14.2
-          cd terminal && pytest -q
-
       - name: Shell scripts
         run: |
           bash -n install.sh
