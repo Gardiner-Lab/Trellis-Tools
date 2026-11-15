@@ -376,3 +376,36 @@ def test_a_terminal_left_alone_is_locked_and_the_session_carries_on(tmp_path):
             listed = await (await w.call('GET', '/api/sessions')).json()
             assert listed[0]['state'] == 'open' and not listed[0]['attached']      # still running, waiting
     run(go())
+
+
+def test_a_session_left_alone_runs_on_by_default(tmp_path):
+    async def go():
+        sessions = sessions_module.Sessions()                 # the service's default: never closed for being left
+        s = sessions_module.Session('bob', {'id': 'c', 'label': 'x', 'username': 'bob', 'hostname': 'h', 'port': 22}, 80, 24)
+        s.state, s.detached_at = 'open', time.time() - 30 * 24 * 3600   # a month with no browser
+        sessions.all[s.id] = s
+        await sessions.tidy()
+        assert s.state == 'open' and s.id in sessions.all
+    run(go())
+
+
+def test_what_was_printed_while_away_is_shown_on_return(tmp_path):
+    async def go():
+        async with World(tmp_path) as w:
+            c = await w.connection('bob')
+            ws = await w.socket(connection=c['id'])
+            await read_until(ws, 'assword:')
+            await send(ws, PASSWORD + '\r')
+            await read_until(ws, 'Welcome')
+            await ws.close()
+            await asyncio.sleep(0.2)
+            # Output arrives with no browser attached, as from a job left running.
+            [session] = w.app['sessions'].mine('bob')
+            for i in range(200):
+                await session.output(f'step {i} done\r\n'.encode())
+            # Back, from "another computer": all of it, before anything new.
+            ws = await w.socket(connection=c['id'])
+            out, _ = await read_until(ws, 'step 199 done')
+            assert 'Welcome to the test HPC' in out and 'step 0 done' in out
+            await ws.close()
+    run(go())

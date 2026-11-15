@@ -436,8 +436,9 @@ services:
       - URL_PREFIX=/terminal
       - NOTEBOOK_URL=/notebook
       - TZ=${TZ:-Europe/Amsterdam}
-      # Hours a session with no browser attached is kept open (what runs in tmux on the machine carries on).
-      - KEEP_HOURS=${TERMINAL_KEEP_HOURS:-12}
+      # Sessions run until their member ends them, however long no browser is attached (0). Set hours to
+      # close sessions left that long; what runs in tmux on the machine carries on even then.
+      - KEEP_HOURS=${TERMINAL_KEEP_HOURS:-0}
       - SESSIONS_PER_MEMBER=${TERMINAL_SESSIONS_PER_MEMBER:-6}
       # Minutes without a key pressed or the mouse moved before a terminal page locks and signs out (0: never).
       - IDLE_MINUTES=${TERMINAL_IDLE_MINUTES:-5}

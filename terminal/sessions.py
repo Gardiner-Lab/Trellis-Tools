@@ -22,7 +22,7 @@ from typing import Dict, List, Optional
 
 import asyncssh
 
-SCROLLBACK = 256 * 1024                 # bytes of output kept for a browser that attaches later
+SCROLLBACK = 1024 * 1024                # bytes of output kept while away (about 12,000 lines), sent again on return
 ASK_TIMEOUT = 300                       # seconds to type a password or code before giving up
 MAX_TRIES = 3                           # wrong answers before the login is given up
 
@@ -272,8 +272,10 @@ class Session:
 class Sessions:
     """Every open session, by id; each member sees only their own."""
 
-    def __init__(self, keep_hours: float = 12, per_member: int = 6, total: int = 100):
+    def __init__(self, keep_hours: float = 0, per_member: int = 6, total: int = 100):
         self.all: Dict[str, Session] = {}
+        # 0: a session runs until its member ends it or it ends on the machine, however long nobody
+        # looks at it; leaving work running to come back to from elsewhere is the point.
         self.keep = keep_hours * 3600
         self.per_member = per_member
         self.total = total
@@ -301,13 +303,13 @@ class Sessions:
         return s
 
     async def tidy(self, now: Optional[float] = None) -> None:
-        """Close sessions nobody has looked at for ``keep`` hours, and forget closed ones after an hour."""
+        """Forget closed sessions after an hour; with ``keep`` set, also close those nobody has looked at that long."""
         now = now or time.time()
         for s in list(self.all.values()):
             if s.socket is not None or s.detached_at is None:
                 continue
             idle = now - s.detached_at
-            if s.state != 'closed' and idle > self.keep:
+            if s.state != 'closed' and self.keep > 0 and idle > self.keep:
                 await s.close(f'Closed after {self.keep / 3600:g} hours with no browser attached.')
             elif s.state == 'closed' and idle > 3600:
                 self.all.pop(s.id, None)

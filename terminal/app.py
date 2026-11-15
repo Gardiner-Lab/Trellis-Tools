@@ -111,7 +111,7 @@ def create_app(data_dir: Optional[Path] = None, prefix: Optional[str] = None, ke
     app['prefix'] = (prefix if prefix is not None else os.environ.get('URL_PREFIX', '/terminal')).rstrip('/')
     app['store'] = Store(Path(data_dir or os.environ.get('TERMINAL_DATA', '/terminal-data')) / 'terminal.db')
     app['sessions'] = Sessions(keep_hours=float(keep_hours if keep_hours is not None else
-                                                os.environ.get('KEEP_HOURS', '12')),
+                                                os.environ.get('KEEP_HOURS', '0')),
                                per_member=int(os.environ.get('SESSIONS_PER_MEMBER', '6')))
     app['notebook'] = os.environ.get('NOTEBOOK_URL', '/notebook').rstrip('/')
     # A terminal left without a key pressed or the mouse moved this long is locked: the page lets go of

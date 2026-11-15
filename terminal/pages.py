@@ -153,17 +153,23 @@ def help_page(prefix: str) -> str:
 
     <h2 id="leave">Leaving work running, and coming back</h2>
     <p>Close the page: the session carries on. Open the connection's link again, from any computer, and you are back where
-      you were, with what it printed meanwhile. Your open sessions are listed on the HPC Terminal page.</p>
+      you were: the terminal first shows what the session printed, while you were there and while you were away (its last
+      12,000 lines or so), then carries on live. Your open sessions are listed on the HPC Terminal page.</p>
+    <p>After a restart of the suite, that record is gone, but with tmux nothing on the machine is: you are put back in the
+      same tmux session, as it was, and tmux's own history (Ctrl-b then [, to scroll; q to stop) holds what scrolled past.</p>
     <p>With <b>Keep my work in tmux</b> (on unless you turn it off), the terminal is a <code>tmux</code> session on the
       machine, called <code>trellis</code>. Then your work also outlives this service: after the suite is restarted or
       updated, opening the link logs you in again and puts you back in the same tmux session. Without tmux on the machine,
       you get an ordinary shell.</p>
-    <p><b>Locked after 5 minutes away.</b> As a precaution, a terminal page with no key pressed and no mouse
-      movement for 5 minutes is locked: it lets go of the session, clears the screen and signs you out of the suite, so a
-      computer left unattended is not a way onto the lab's machines. Thirty seconds before, it says so; press a key or move
-      the mouse to stay. The session itself carries on: sign in again and you are taken straight back to it.</p>
-    <p>A session nobody has looked at for 12 hours is closed (what runs in tmux carries on). For work that takes hours or
-      days, use the machine's job scheduler (for example <code>sbatch</code> with Slurm) rather than the login node: most
+    <p><b>The page locks after 5 minutes away; the session does not stop.</b> As a precaution, a terminal page with no key
+      pressed and no mouse movement for 5 minutes lets go of the session, clears the screen and signs you out of the suite, so
+      a computer left unattended is not a way onto the lab's machines. Thirty seconds before, it says so; press a key or move
+      the mouse to stay. What runs in the session carries on regardless: sign in again, here or anywhere else, and the link
+      takes you straight back to it.</p>
+    <p>A session runs until you end it (<b>End session</b>), or it ends on the machine, however long you are away: leave it
+      running at work and open the link at home. Only one browser shows it at a time; opening it somewhere else takes it
+      over from the first. A restart of the suite (an update, say) does end the connection: that is what tmux is for. For
+      work that takes hours or days, use the machine's job scheduler (for example <code>sbatch</code> with Slurm) rather than the login node: most
       HPC centres stop long work on login nodes.</p>
 
     <h2 id="notebook">Saving to the Lab Notebook</h2>
