@@ -67,6 +67,8 @@ DATABASES = {
     # The Genome Browser's own database. The reference genomes and tracks beside
     # it on that volume are not in an archive at all: see docs/BACKUP.md.
     'genome.db': Path(os.environ.get('GENOME_DB', '/genome/genome.db')),
+    # The HPC Terminal: the lab's machines (with their host keys) and members' saved connections.
+    'terminal.db': Path(os.environ.get('TERMINAL_DB', '/terminal-data/terminal.db')),
 }
 
 # The MoClo tool creates 'admin' with this password when no such account exists.

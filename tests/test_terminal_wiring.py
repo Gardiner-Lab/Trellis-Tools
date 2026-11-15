@@ -57,3 +57,17 @@ def test_the_landing_page_lists_it():
     t = next(t for t in tools if t['id'] == 'terminal')
     assert t['href'] == '/terminal/' and t['health'] == '/terminal/health'
     assert (ROOT / 'portal' / 'pages' / 'icons' / 'terminal.svg').exists()
+
+
+def test_its_volume_is_backed_up_and_restored_and_nobody_else_mounts_it():
+    services = _compose()['services']
+    mounted = {name: [str(v) for v in s.get('volumes', []) if str(v).startswith('terminal-data:')]
+               for name, s in services.items()}
+    mounted = {k: v for k, v in mounted.items() if v}
+    assert mounted == {'terminal': ['terminal-data:/terminal-data'],
+                       'backup': ['terminal-data:/terminal-data:ro'],          # the nightly job only reads
+                       'backup-console': ['terminal-data:/terminal-data'],
+                       'restore': ['terminal-data:/terminal-data']}
+    for script, line in (('backup/backup.sh', 'TERMINAL_DB:-/terminal-data/terminal.db'),
+                         ('backup/restore.sh', 'TERMINAL_DB:-/terminal-data/terminal.db')):
+        assert line in (ROOT / script).read_text(encoding='utf-8')

@@ -54,5 +54,12 @@ body.term-page { display: flex; flex-direction: column; height: 100vh; margin: 0
 .term-preview { max-height: 220px; overflow: auto; background: var(--tt-sunk); border-radius: 6px; padding: .5rem;
   font-size: .8rem; margin: 0; white-space: pre; }
 
+.term-warning { background: var(--tt-warn-soft); color: var(--tt-warn); padding: .35rem .75rem; font-size: .9rem;
+  border-bottom: 1px solid var(--tt-border); }
+.term-locked { position: fixed; inset: 0; background: rgba(30, 31, 34, .96); color: #fff; display: flex;
+  align-items: center; justify-content: center; text-align: center; z-index: 50; }
+.term-locked[hidden] { display: none; }
+.term-locked h2 { margin: 0 0 .5rem; }
+
 .term-help h2 { margin-top: 1.5rem; }
 .term-help li { margin: .3rem 0; }

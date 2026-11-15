@@ -439,6 +439,10 @@ services:
       # Hours a session with no browser attached is kept open (what runs in tmux on the machine carries on).
       - KEEP_HOURS=${TERMINAL_KEEP_HOURS:-12}
       - SESSIONS_PER_MEMBER=${TERMINAL_SESSIONS_PER_MEMBER:-6}
+      # Minutes without a key pressed or the mouse moved before a terminal page locks and signs out (0: never).
+      - IDLE_MINUTES=${TERMINAL_IDLE_MINUTES:-5}
+      - SUITE_LOGIN_URL=/account/login
+      - SUITE_LOGOUT_API=/account/api/logout
     # A relay: tens of sessions take well under this.
     mem_limit: 512m
     restart: unless-stopped
@@ -481,6 +485,7 @@ services:
       # tracks on this volume are not, being far too large for a nightly
       # archive. See docs/BACKUP.md.
       - genome-data:/genome:ro
+      - terminal-data:/terminal-data:ro
       # The network drive, mounted on the host. See docs/BACKUP.md.
       - ${BACKUP_ROOT:-/mnt}:/mnt
       - ${BACKUP_DEST:-./backups}:/backup
@@ -517,6 +522,7 @@ services:
       - stocks-data:/stocks
       - booking-data:/booking
       - genome-data:/genome
+      - terminal-data:/terminal-data
       - ${BACKUP_ROOT:-/mnt}:/mnt
       - ${BACKUP_DEST:-./backups}:/backup
       - backup-config:/config-store
@@ -553,6 +559,7 @@ services:
       - stocks-data:/stocks
       - booking-data:/booking
       - genome-data:/genome
+      - terminal-data:/terminal-data
       - ${BACKUP_ROOT:-/mnt}:/mnt
       - ${BACKUP_DEST:-./backups}:/backup
       - backup-config:/config-store

@@ -98,7 +98,7 @@ def test_the_genome_database_is_copied_but_its_sequence_files_are_not(tmp_path):
     store.mkdir()
     (dest / '.backup-target').write_text('')
     none = {f'{var}_DB': str(tmp_path / f'no-{var.lower()}.db')
-            for var in ('MOCLO', 'PARTS', 'EDITOR', 'SUITE', 'NOTEBOOK', 'SEEDS', 'STOCKS', 'BOOKING')}
+            for var in ('MOCLO', 'PARTS', 'EDITOR', 'SUITE', 'NOTEBOOK', 'SEEDS', 'STOCKS', 'BOOKING', 'TERMINAL')}
     env = {**os.environ, 'BACKUP_DEST': str(dest), 'BACKUP_STAGING': str(staging),
            'CONFIG_STORE': str(store), 'CONFIG_DIR': str(tmp_path / 'nosuite'),
            'MOCLO_DIR': str(tmp_path / 'nodir1'), 'EDITOR_DIR': str(tmp_path / 'nodir2'),
@@ -116,3 +116,31 @@ def test_the_genome_database_is_copied_but_its_sequence_files_are_not(tmp_path):
     # And the run says what it is leaving behind, rather than leaving it to be
     # found during a restore.
     assert 'genome files: not archived' in run.stdout
+
+
+def test_the_hpc_terminals_machines_and_connections_are_backed_up(tmp_path):
+    """terminal.db: the lab's machines with their host keys, and members' saved connections."""
+    terminal = tmp_path / 'terminal'
+    terminal.mkdir()
+    conn = sqlite3.connect(terminal / 'terminal.db')
+    conn.execute('CREATE TABLE hosts (id, name)')
+    conn.execute("INSERT INTO hosts VALUES ('h1', 'Cluster')")
+    conn.commit()
+    conn.close()
+    dest, staging, store = tmp_path / 'dest', tmp_path / 'staging', tmp_path / 'store'
+    dest.mkdir()
+    store.mkdir()
+    (dest / '.backup-target').write_text('')
+    none = {f'{var}_DB': str(tmp_path / f'no-{var.lower()}.db')
+            for var in ('MOCLO', 'PARTS', 'EDITOR', 'SUITE', 'NOTEBOOK', 'SEEDS', 'STOCKS', 'BOOKING', 'GENOME')}
+    env = {**os.environ, 'BACKUP_DEST': str(dest), 'BACKUP_STAGING': str(staging),
+           'CONFIG_STORE': str(store), 'CONFIG_DIR': str(tmp_path / 'nosuite'),
+           'MOCLO_DIR': str(tmp_path / 'nodir1'), 'EDITOR_DIR': str(tmp_path / 'nodir2'),
+           'GENOME_DIR': str(tmp_path / 'nodir3'), 'TERMINAL_DB': str(terminal / 'terminal.db'),
+           'NOTIFY_URL': '', **none}
+    run = subprocess.run(['sh', str(SCRIPT)], env=env, capture_output=True, text=True, timeout=120)
+    assert run.returncode == 0, run.stdout + run.stderr
+    assert 'HPC Terminal: ok' in run.stdout + run.stderr
+    [archive] = list(dest.glob('lab-suite-*.tar.gz'))
+    with tarfile.open(archive) as outer:
+        assert any(m.name.endswith('databases/terminal.db') for m in outer.getmembers())

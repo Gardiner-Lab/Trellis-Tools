@@ -105,7 +105,8 @@ def connection_view(c: dict, request) -> dict:
 
 # --- the application ---------------------------------------------------------------------------------
 
-def create_app(data_dir: Optional[Path] = None, prefix: Optional[str] = None, keep_hours: Optional[float] = None) -> web.Application:
+def create_app(data_dir: Optional[Path] = None, prefix: Optional[str] = None, keep_hours: Optional[float] = None,
+               idle_seconds: Optional[float] = None) -> web.Application:
     app = web.Application(middlewares=[_json_body])
     app['prefix'] = (prefix if prefix is not None else os.environ.get('URL_PREFIX', '/terminal')).rstrip('/')
     app['store'] = Store(Path(data_dir or os.environ.get('TERMINAL_DATA', '/terminal-data')) / 'terminal.db')
@@ -113,6 +114,13 @@ def create_app(data_dir: Optional[Path] = None, prefix: Optional[str] = None, ke
                                                 os.environ.get('KEEP_HOURS', '12')),
                                per_member=int(os.environ.get('SESSIONS_PER_MEMBER', '6')))
     app['notebook'] = os.environ.get('NOTEBOOK_URL', '/notebook').rstrip('/')
+    # A terminal left without a key pressed or the mouse moved this long is locked: the page lets go of
+    # the session (which carries on) and signs out, so a computer walked away from is not a way onto
+    # the lab's machines. 0 turns it off.
+    app['idle'] = float(idle_seconds if idle_seconds is not None else
+                        float(os.environ.get('IDLE_MINUTES', '5')) * 60)
+    app['login'] = os.environ.get('SUITE_LOGIN_URL', '/account/login')
+    app['logout'] = os.environ.get('SUITE_LOGOUT_API', '/account/api/logout')
 
     r = app.router
     r.add_get('/health', health)
@@ -187,7 +195,8 @@ async def page_home(request):
 
 async def page_terminal(request):
     user = member(request)
-    return _page(request, pages.terminal(request.app['prefix'], request.app['notebook'], user))
+    return _page(request, pages.terminal(request.app['prefix'], request.app['notebook'], user, request.app['idle'],
+                                         request.app['login'], request.app['logout']))
 
 
 async def page_help(request):
@@ -405,8 +414,13 @@ async def websocket(request):
     """
     ?connection=ID opens that connection: the member's session on it that is still going, or a new one
     (&new=1 for a second). ?session=ID attaches to a session. Text frames are JSON: from the browser
-    {"t":"in","d":text} and {"t":"resize","cols":n,"rows":n}; to it, {"t":"status",...} and
-    {"t":"error","message":...}. Binary frames are the terminal's output.
+    {"t":"in","d":text}, {"t":"resize","cols":n,"rows":n} and {"t":"active"} (the mouse moved, say);
+    to it, {"t":"status",...}, {"t":"error","message":...} and {"t":"locked"}. Binary frames are the
+    terminal's output.
+
+    With nothing typed and no activity for the idle time, the browser is told it is locked and let go
+    of; the session carries on. The page then signs out (static/terminal.js), but the server does not
+    rely on it: a page that does not lock is let go of all the same.
     """
     user = member(request)
     same_origin(request)
@@ -439,20 +453,39 @@ async def websocket(request):
                 request.app['store'].used(c['id'])
         await session.attach(ws)
         session.resize(cols, rows)
-        async for msg in ws:
-            if msg.type != WSMsgType.TEXT:
-                continue
-            try:
-                m = json.loads(msg.data)
-            except ValueError:
-                continue
-            if m.get('t') == 'in' and isinstance(m.get('d'), str):
-                await session.typed(m['d'])
-            elif m.get('t') == 'resize':
+        last = [time.monotonic()]
+        idle = request.app['idle']
+
+        async def watch():
+            while not ws.closed:
+                await asyncio.sleep(min(15.0, max(0.2, idle / 4)))
+                if time.monotonic() - last[0] >= idle:
+                    session.detach(ws)
+                    await ws.send_str(json.dumps({'t': 'locked', 'minutes': round(idle / 60, 1)}))
+                    await ws.close()
+                    return
+        watcher = asyncio.ensure_future(watch()) if idle > 0 else None
+        try:
+            async for msg in ws:
+                if msg.type != WSMsgType.TEXT:
+                    continue
                 try:
-                    session.resize(int(m.get('cols')), int(m.get('rows')))
-                except (TypeError, ValueError):
-                    pass
+                    m = json.loads(msg.data)
+                except ValueError:
+                    continue
+                if m.get('t') == 'in' and isinstance(m.get('d'), str):
+                    last[0] = time.monotonic()
+                    await session.typed(m['d'])
+                elif m.get('t') == 'active':
+                    last[0] = time.monotonic()
+                elif m.get('t') == 'resize':
+                    try:
+                        session.resize(int(m.get('cols')), int(m.get('rows')))
+                    except (TypeError, ValueError):
+                        pass
+        finally:
+            if watcher is not None:
+                watcher.cancel()
     finally:
         if session is not None:
             session.detach(ws)

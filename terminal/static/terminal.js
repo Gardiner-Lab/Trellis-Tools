@@ -198,7 +198,7 @@
     term.open(el('terminal'));
     fit.fit();
     term.focus();
-    var socket = null, info = null, ended = false, retry = 0, taken = false;
+    var socket = null, info = null, ended = false, retry = 0, taken = false, locked = false;
 
     function setState(s) {
       info = s;
@@ -232,10 +232,11 @@
         var m = JSON.parse(ev.data);
         if (m.t === 'status') { setState(m); }
         else if (m.t === 'error') { ended = true; term.write('\r\n\x1b[31m' + m.message + '\x1b[0m\r\n'); el('term-state').textContent = m.message; }
+        else if (m.t === 'locked') { lock(); }
         else if (m.t === 'taken') { taken = true; term.write('\r\n\x1b[33m[Opened in another window: this one has let go of it. Reload to take it back.]\x1b[0m\r\n'); }
       };
       socket.onclose = function () {
-        if (ended || taken) { return; }
+        if (ended || taken || locked) { return; }
         // The network dropped, or the service restarted: try again, a little later each time.
         retry = Math.min(retry + 1, 6);
         el('term-state').textContent = 'reconnecting…';
@@ -244,8 +245,61 @@
     }
 
     term.onData(function (d) {
+      if (locked) { return; }
+      lastActive = Date.now();
       if (socket && socket.readyState === 1) { socket.send(JSON.stringify({ t: 'in', d: d })); }
     });
+
+    // --- locked after a while away (data-idle seconds; the server holds to it as well) ---
+
+    var IDLE = Number(document.body.getAttribute('data-idle') || 300) * 1000;
+    var LOGIN = document.body.getAttribute('data-login') || '/account/login';
+    var LOGOUT = document.body.getAttribute('data-logout') || '/account/api/logout';
+    var lastActive = Date.now(), lastSent = 0;
+
+    function active() {
+      if (locked) { return; }
+      lastActive = Date.now();
+      el('idle-warning').hidden = true;
+      // The server is told now and then, so that reading without typing does not lock it either.
+      if (Date.now() - lastSent > 20000 && socket && socket.readyState === 1) {
+        socket.send(JSON.stringify({ t: 'active' }));
+        lastSent = Date.now();
+      }
+    }
+    ['keydown', 'mousedown', 'mousemove', 'wheel', 'touchstart'].forEach(function (name) {
+      document.addEventListener(name, active, { passive: true, capture: true });
+    });
+
+    function lock() {
+      if (locked) { return; }
+      locked = true;
+      if (socket) { try { socket.close(); } catch (e) { /* already closed */ } }
+      term.reset();                       // nothing of the session left on the screen
+      if (el('save-dialog').open) { el('save-dialog').close(); }
+      el('idle-warning').hidden = true;
+      el('locked').hidden = false;
+      var back = PREFIX + '/s/' + (info ? info.id : id);
+      el('locked-text').textContent = 'No key was pressed and the mouse did not move for ' + Math.round(IDLE / 60000) +
+        ' minutes. Your session is still running; signing you out, then back to it once you sign in again…';
+      // Signed out of the suite, then to its sign-in page, which comes back here.
+      fetch(LOGOUT, { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        .catch(function () { /* the sign-in page is next either way */ })
+        .then(function () { window.location.assign(LOGIN + '?next=' + encodeURIComponent(back)); });
+    }
+
+    if (IDLE > 0) {
+      setInterval(function () {
+        if (locked) { return; }
+        var left = IDLE - (Date.now() - lastActive);
+        if (left <= 0) { lock(); return; }
+        if (left <= 30000) {
+          el('idle-warning').textContent = 'Locking in ' + Math.ceil(left / 1000) + ' s, as nothing has been typed for a ' +
+            'while: press a key or move the mouse to stay. (The session carries on either way.)';
+          el('idle-warning').hidden = false;
+        }
+      }, 1000);
+    }
     function resize() {
       fit.fit();
       if (socket && socket.readyState === 1) { socket.send(JSON.stringify({ t: 'resize', cols: term.cols, rows: term.rows })); }

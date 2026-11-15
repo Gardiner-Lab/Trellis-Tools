@@ -27,6 +27,7 @@ make restore         # put the latest backup back
 | Anything else in MoClo's and the editor's volumes | tar |
 | `notebook.db`, `seeds.db`, `stocks.db` (with their photos and files), `booking.db` | SQLite online backup |
 | `genome.db` — the Genome Browser's reference genomes, tracks, who they are shared with, and their tags | SQLite online backup |
+| `terminal.db` — the HPC Terminal's machines (with their host keys) and members' saved connections; never a password or key, which it does not keep | SQLite online backup |
 | The stack's configuration: the compose files, `nginx/`, `landing/`, `scripts/`, `docs/`, `.env.example`, `Makefile`, `install.sh` | tar, **these named files only** |
 
 ## What is not: the Genome Browser's sequence and track files

@@ -65,9 +65,10 @@ async def shell(process):
 class World:
     """An SSH server, the account directory (ada is an administrator, bob and cy are not) and the service."""
 
-    def __init__(self, tmp_path, server=Server):
+    def __init__(self, tmp_path, server=Server, idle=None):
         self.tmp = tmp_path
         self.server = server
+        self.idle = idle
 
     async def __aenter__(self):
         users = self.tmp / 'moclo.db'
@@ -87,7 +88,7 @@ class World:
             self.server, '127.0.0.1', 0, server_host_keys=[self.key], process_factory=shell,
             sftp_factory=lambda chan: asyncssh.SFTPServer(chan, chroot=str(files).encode()))
         self.port = self.ssh.sockets[0].getsockname()[1]
-        self.app = terminal_app.create_app(self.tmp / 'data', prefix='/terminal', keep_hours=1)
+        self.app = terminal_app.create_app(self.tmp / 'data', prefix='/terminal', keep_hours=1, idle_seconds=self.idle)
         self.client = TestClient(TestServer(self.app))
         await self.client.start_server()
         return self
@@ -327,6 +328,7 @@ def test_pages_and_health(tmp_path):
             assert 'id="machines-card"' not in await (await w.call('GET', '/', 'bob')).text()
             page = await (await w.call('GET', '/c/anything', 'bob')).text()
             assert 'xterm.js' in page and 'id="terminal"' in page
+            assert 'data-idle="300"' in page and 'data-login="/account/login"' in page   # 5 minutes, by default
             assert (await w.call('GET', '/', '')).status == 401
             assert 'tmux' in await (await w.call('GET', '/help', 'bob')).text()
     run(go())
@@ -345,4 +347,32 @@ def test_a_login_with_a_one_time_code(tmp_path):
             out, statuses = await read_until(ws, 'Welcome to the test HPC')
             assert '123456' in out and PASSWORD not in out          # the code is shown as typed, the password not
             assert 'Permission denied' not in out                  # two questions, not two tries
+    run(go())
+
+
+def test_a_terminal_left_alone_is_locked_and_the_session_carries_on(tmp_path):
+    async def go():
+        async with World(tmp_path, idle=1.0) as w:
+            c = await w.connection('bob')
+            ws = await w.socket(connection=c['id'])
+            await read_until(ws, 'assword:')
+            await send(ws, PASSWORD + '\r')
+            await read_until(ws, 'Welcome')
+            # Kept open while something happens: typing, or the page saying the mouse moved.
+            for _ in range(4):
+                await asyncio.sleep(0.4)
+                await ws.send_str(json.dumps({'t': 'active'}))
+            assert not ws.closed
+            # Then nothing: locked and let go of.
+            locked = None
+            end = time.time() + 5
+            while locked is None and time.time() < end:
+                msg = await asyncio.wait_for(ws.receive(), timeout=5)
+                if msg.type.name == 'TEXT' and json.loads(msg.data).get('t') == 'locked':
+                    locked = json.loads(msg.data)
+            assert locked is not None
+            msg = await asyncio.wait_for(ws.receive(), timeout=5)
+            assert msg.type.name in ('CLOSE', 'CLOSING', 'CLOSED')
+            listed = await (await w.call('GET', '/api/sessions')).json()
+            assert listed[0]['state'] == 'open' and not listed[0]['attached']      # still running, waiting
     run(go())

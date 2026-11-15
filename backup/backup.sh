@@ -157,6 +157,7 @@ backup_db "Seed Bank"      "${SEEDS_DB:-/seeds/seeds.db}"
 backup_db "Lab Stocks"     "${STOCKS_DB:-/stocks/stocks.db}"
 backup_db "Booking"        "${BOOKING_DB:-/booking/booking.db}"
 backup_db "Genome Browser" "${GENOME_DB:-/genome/genome.db}"
+backup_db "HPC Terminal"   "${TERMINAL_DB:-/terminal-data/terminal.db}"
 
 [ -n "$DB_REPORT" ] || fail "no databases were found to back up - check the volume mounts"
 

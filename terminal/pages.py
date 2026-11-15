@@ -82,7 +82,8 @@ def home(prefix: str, notebook: str, user: str, admin: bool) -> str:
     return _page('HPC Terminal', prefix, body, notebook, user)
 
 
-def terminal(prefix: str, notebook: str, user: str) -> str:
+def terminal(prefix: str, notebook: str, user: str, idle: float = 300, login: str = '/account/login',
+             logout: str = '/account/api/logout') -> str:
     p = escape(prefix)
     head = (f'<link rel="stylesheet" href="{p}/static/xterm/xterm.css">'
             f'<script src="{p}/static/xterm/xterm.js" defer></script>'
@@ -97,7 +98,11 @@ def terminal(prefix: str, notebook: str, user: str) -> str:
     <button class="tt-btn" type="button" id="copy-link">Copy link</button>
     <button class="tt-btn danger" type="button" id="close-session" disabled>End session</button>
   </div>
+  <div class="term-warning" id="idle-warning" role="status" hidden></div>
   <div id="terminal" class="term-screen"></div>
+  <div class="term-locked" id="locked" hidden>
+    <div><h2>Locked</h2><p id="locked-text">Signing you out…</p></div>
+  </div>
 
   <dialog id="save-dialog" class="term-dialog">
     <form method="dialog" id="save-form">
@@ -121,7 +126,9 @@ def terminal(prefix: str, notebook: str, user: str) -> str:
       </div>
     </form>
   </dialog>"""
-    return _page('Terminal', prefix, body, notebook, user, extra_head=head).replace('<body class="tt"', '<body class="tt term-page"')
+    return _page('Terminal', prefix, body, notebook, user, extra_head=head).replace(
+        '<body class="tt"', f'<body class="tt term-page" data-idle="{int(idle)}" data-login="{escape(login)}" '
+                            f'data-logout="{escape(logout)}"')
 
 
 def help_page(prefix: str) -> str:
@@ -151,6 +158,10 @@ def help_page(prefix: str) -> str:
       machine, called <code>trellis</code>. Then your work also outlives this service: after the suite is restarted or
       updated, opening the link logs you in again and puts you back in the same tmux session. Without tmux on the machine,
       you get an ordinary shell.</p>
+    <p><b>Locked after 5 minutes away.</b> As a precaution, a terminal page with no key pressed and no mouse
+      movement for 5 minutes is locked: it lets go of the session, clears the screen and signs you out of the suite, so a
+      computer left unattended is not a way onto the lab's machines. Thirty seconds before, it says so; press a key or move
+      the mouse to stay. The session itself carries on: sign in again and you are taken straight back to it.</p>
     <p>A session nobody has looked at for 12 hours is closed (what runs in tmux carries on). For work that takes hours or
       days, use the machine's job scheduler (for example <code>sbatch</code> with Slurm) rather than the login node: most
       HPC centres stop long work on login nodes.</p>

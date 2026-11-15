@@ -20,10 +20,14 @@ and the project uses [semantic versioning](https://semver.org/).
     too. A session with no browser attached for 12 hours is closed (`TERMINAL_KEEP_HOURS`).
   - *Save a script to the notebook* (a file on the machine, read over SFTP) and *Save the session's text*, each as a
     page under the day the session started (or another day chosen).
+  - **Locked after 5 minutes away:** a terminal page with no key pressed and no mouse movement for 5 minutes lets go of
+    the session, clears the screen and signs out of the suite (warning 30 s before), so an unattended computer is not a
+    way onto the lab's machines; signing in again goes straight back to the session, which carried on. The server holds
+    to it too (`TERMINAL_IDLE_MINUTES`, 0 to turn it off).
   - Only machines an administrator adds can be reached, each checked against the host key it was added with; a
     machine answering with another key is not logged in to. Nothing runs on the suite's server.
-- Its machine list and saved connections are in the `terminal-data` volume, which the nightly backup does not yet
-  include.
+- Its machine list and saved connections (`terminal-data`, `terminal.db`) are in the nightly backup and can be
+  restored like the other tools' databases.
 
 ## [2.52.1] - 2026-11-15
 Pins Genome Browser 0.15.2; pins lab-suite-portal and lab-suite-backup 2.52.1.
