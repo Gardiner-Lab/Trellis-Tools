@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.55.0] - 2026-11-15
+Pins HPC Terminal 0.2.1; pins lab-suite-portal and lab-suite-backup 2.55.0.
+
+### Added
+- **The dashboard's HPC Terminal tab** (administrators): the networks the HPC Terminal may reach, each with a note,
+  counting at once. `TERMINAL_ALLOWED_NETWORKS` in `.env` stays the list until one is saved there;
+  `TERMINAL_NETWORK_LIMIT`, if set, is a bound the dashboard cannot go beyond. Too-wide networks, the server itself and
+  link-local addresses are refused, and each change is recorded with who made it.
+
 ## [2.54.0] - 2026-11-15
 Pins HPC Terminal 0.2.0; pins lab-suite-portal and lab-suite-backup 2.54.0.
 
