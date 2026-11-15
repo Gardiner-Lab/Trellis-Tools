@@ -4,9 +4,9 @@ name: Release
 #
 #   1. checks that the tag matches the backup image version pinned in
 #      docker-compose.yml, and that every other pinned image exists;
-#   2. publishes the sign-in and backup services as
-#      ghcr.io/gardiner-lab/lab-suite-portal and lab-suite-backup, for Intel and
-#      ARM servers;
+#   2. publishes the sign-in, backup and HPC Terminal services as
+#      ghcr.io/gardiner-lab/lab-suite-portal, lab-suite-backup and
+#      lab-suite-terminal, for Intel and ARM servers;
 #   3. creates a GitHub release with that version's CHANGELOG notes and a
 #      download of the suite, for servers without git.
 
@@ -30,7 +30,7 @@ jobs:
       - name: Check versions
         run: |
           version="${GITHUB_REF_NAME#v}"
-          for service in backup portal; do
+          for service in backup portal terminal; do
             grep -q "lab-suite-$service:\${SUITE_VERSION:-$version}" docker-compose.yml \
               || { echo "docker-compose.yml does not pin lab-suite-$service to $version"; exit 1; }
           done
@@ -38,7 +38,7 @@ jobs:
           # compares its pin against. Left unchecked it goes stale: the backup
           # console reported 2.32.0 from 2.33.0 to 2.34.2 because nothing here
           # compared the constant with the tag.
-          for file in portal/portal.py backup/app.py; do
+          for file in portal/portal.py backup/app.py terminal/app.py; do
             code="$(sed -n "s/^APP_VERSION = '\(.*\)'/\1/p" "$file")"
             [ "$code" = "$version" ] \
               || { echo "$file says APP_VERSION $code, but this tag is $version"; exit 1; }
@@ -57,6 +57,11 @@ jobs:
         run: |
           pip install flask bcrypt pytest pyyaml requests
           pytest -q portal/ backup/ tests/
+      - name: HPC Terminal tests
+        run: |
+          # The versions Alpine 3.20 gives the image.
+          pip install aiohttp==3.9.3 asyncssh==2.14.2
+          cd terminal && pytest -q
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -94,6 +99,21 @@ jobs:
           push: true
           tags: ${{ steps.portal-meta.outputs.tags }}
           labels: ${{ steps.portal-meta.outputs.labels }}
+
+      - id: terminal-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/gardiner-lab/lab-suite-terminal
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./terminal
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.terminal-meta.outputs.tags }}
+          labels: ${{ steps.terminal-meta.outputs.labels }}
 
       - name: Create the GitHub release
         env:

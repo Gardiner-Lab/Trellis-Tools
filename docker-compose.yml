@@ -59,7 +59,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.52.1}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.53.0}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -416,6 +416,35 @@ services:
     mem_limit: 6g
     restart: unless-stopped
 
+  # The HPC Terminal, at /terminal/: a terminal in the browser on the lab's HPC
+  # machines, over SSH. Sessions live in this process, so work goes on with the
+  # browser closed. It reaches only the machines an administrator adds (each
+  # checked against its host key), runs nothing on this server, and keeps no
+  # password, one-time code or private key. Its own volume holds the machine
+  # list and each member's saved connections; it reads the account directory to
+  # know who is an administrator.
+  terminal:
+    image: ghcr.io/gardiner-lab/lab-suite-terminal:${SUITE_VERSION:-2.53.0}
+    container_name: lab-terminal
+    depends_on:
+      moclo:
+        condition: service_healthy
+    volumes:
+      - terminal-data:/terminal-data
+      - moclo-data:/moclo:ro
+    environment:
+      - URL_PREFIX=/terminal
+      - NOTEBOOK_URL=/notebook
+      - TZ=${TZ:-Europe/Amsterdam}
+      # Hours a session with no browser attached is kept open (what runs in tmux on the machine carries on).
+      - KEEP_HOURS=${TERMINAL_KEEP_HOURS:-12}
+      - SESSIONS_PER_MEMBER=${TERMINAL_SESSIONS_PER_MEMBER:-6}
+    # A relay: tens of sessions take well under this.
+    mem_limit: 512m
+    restart: unless-stopped
+    expose:
+      - "5009"
+
   # The file converter: LibreOffice, turning Word, PowerPoint and Excel
   # attachments into PDFs so the notebook, the Seed Bank and Lab Stocks can
   # show them in the browser. Only those three reach it, on a network of its
@@ -437,7 +466,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.52.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.0}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -476,7 +505,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.52.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.0}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -512,7 +541,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.52.1}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.53.0}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:
@@ -553,6 +582,7 @@ volumes:
   # The genome browser: reference genomes, tracks (BigWig/BED/GFF), and the
   # conversion scratch and job database.
   genome-data:
+  terminal-data:
   # Backup settings chosen in the console, shared by the console, the
   # scheduler and the restore service.
   backup-config:

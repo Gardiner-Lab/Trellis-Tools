@@ -14,6 +14,7 @@ landing page that lists the tools:
 | `/stocks/` | [Lab Stocks](https://github.com/Gardiner-Lab/lab-stocks) | its own |
 | `/booking/` | [Booking](https://github.com/Gardiner-Lab/lab-booking) | its own |
 | `/genome/` | [Genome Browser](https://github.com/Gardiner-Lab/genome-browser) | its own |
+| `/terminal/` | HPC Terminal: a terminal on the lab's HPC machines over SSH, whose sessions keep running with the browser closed | this repository |
 | none (inside only) | File converter: LibreOffice, so Word, PowerPoint and Excel attachments open in the browser as PDFs | [Gotenberg](https://gotenberg.dev) |
 
 Each tool keeps its own published image and updates independently — nothing is
@@ -160,6 +161,7 @@ location /seeds/    -> Seed Bank        (URL_PREFIX=/seeds)
 location /stocks/   -> Lab Stocks       (URL_PREFIX=/stocks)
 location /booking/  -> Booking          (URL_PREFIX=/booking)
 location /genome/   -> Genome Browser   (URL_PREFIX=/genome, prefix stripped)
+location /terminal/ -> HPC Terminal     (URL_PREFIX=/terminal, prefix stripped; websocket)
 location /          -> MoClo            (catch-all)
 ```
 

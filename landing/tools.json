@@ -123,6 +123,22 @@
       ],
       "health": "/genome/health",
       "status": "live"
+    },
+    {
+      "id": "terminal",
+      "name": "HPC Terminal",
+      "icon": "🖥️",
+      "image": "/account/icons/terminal.svg",
+      "colour": "#3b3f46",
+      "href": "/terminal/",
+      "summary": "A terminal on the lab's HPC machines in the browser: start long work, close the page, and come back to it from a link.",
+      "points": [
+        "Saved connections to the lab's machines, opened from a link",
+        "Sessions keep running with the browser closed, and in tmux on the machine",
+        "Save scripts and session text to the Lab Notebook, under the day they ran"
+      ],
+      "health": "/terminal/health",
+      "status": "live"
     }
   ],
   "admin": [

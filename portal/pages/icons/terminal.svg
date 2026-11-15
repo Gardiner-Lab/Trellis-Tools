@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="HPC Terminal">
+  <title>HPC Terminal</title>
+  <rect x="7" y="11" width="50" height="38" rx="5" fill="none" stroke="#8b5a2b" stroke-width="4"/>
+  <path d="M7 19H57" stroke="#8b5a2b" stroke-width="3"/>
+  <path d="M16 28L23 33L16 38" fill="none" stroke="#2f8f46" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M27 39H38" stroke="#2f8f46" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M22 55H42" stroke="#8b5a2b" stroke-width="4" stroke-linecap="round"/>
+</svg>

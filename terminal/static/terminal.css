@@ -1,0 +1,58 @@
+/* HPC Terminal, on top of the suite's trellis.css. */
+:root { --tt-terminal: #3b3f46; }
+
+.term-main { max-width: 980px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+.term-lead { color: var(--tt-muted); max-width: 70ch; }
+.term-card { background: var(--tt-card); border: 1px solid var(--tt-border); border-radius: 10px; padding: 1rem 1.25rem;
+  margin: 1rem 0; }
+.term-card h2 { margin: 0 0 .5rem; font-size: 1.1rem; }
+.term-hint { color: var(--tt-muted); font-size: .9rem; }
+.term-error { color: #a12c2c; background: #fbeaea; border-radius: 6px; padding: .5rem .75rem; }
+.term-done { color: var(--tt-green-ink); background: var(--tt-green-soft); border-radius: 6px; padding: .5rem .75rem; }
+
+.term-list { list-style: none; padding: 0; margin: 0 0 .75rem; }
+.term-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding: .6rem 0;
+  border-top: 1px solid var(--tt-line); }
+.term-list li:first-child { border-top: 0; }
+.term-list .term-name { font-weight: 600; }
+.term-list .term-target { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--tt-muted); font-size: .9rem; }
+.term-list .term-spacer, .term-toolbar .term-spacer { flex: 1; }
+.term-badge { font-size: .78rem; border-radius: 999px; padding: .1rem .55rem; background: var(--tt-sunk); color: var(--tt-muted); }
+.term-badge.open { background: var(--tt-green-soft); color: var(--tt-green-ink); }
+.term-badge.login, .term-badge.connecting { background: var(--tt-warn-soft); color: var(--tt-warn); }
+
+.term-form { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: flex-end; margin-top: .5rem; }
+.term-form label, .term-dialog label { display: flex; flex-direction: column; gap: .2rem; font-size: .9rem; }
+.term-form label.term-check { flex-direction: row; align-items: center; gap: .4rem; }
+.term-form input, .term-form select, .term-dialog input, .term-dialog textarea {
+  font: inherit; padding: .35rem .5rem; border: 1px solid var(--tt-border); border-radius: 6px; background: #fff; }
+
+.term-table { width: 100%; border-collapse: collapse; font-size: .9rem; margin-bottom: .5rem; }
+.term-table th, .term-table td { text-align: left; padding: .4rem .5rem; border-top: 1px solid var(--tt-line); vertical-align: top; }
+.term-table code { font-size: .8rem; word-break: break-all; }
+
+/* The terminal page: the toolbar and the terminal filling the rest. */
+body.term-page { display: flex; flex-direction: column; height: 100vh; margin: 0; overflow: hidden; }
+.term-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .4rem .75rem;
+  background: var(--tt-card); border-bottom: 1px solid var(--tt-border); }
+.term-title { font-weight: 600; }
+.term-state { font-size: .85rem; color: var(--tt-muted); }
+.term-screen { flex: 1; min-height: 0; background: #1e1f22; padding: 4px 6px; }
+.term-screen .xterm { height: 100%; }
+
+.term-dialog { border: 1px solid var(--tt-border); border-radius: 10px; width: min(720px, 94vw); padding: 1rem 1.25rem; }
+.term-dialog form { display: flex; flex-direction: column; gap: .6rem; }
+.term-dialog h2 { margin: 0; font-size: 1.1rem; }
+.term-dialog-actions { display: flex; justify-content: flex-end; gap: .5rem; }
+.term-picker-actions { display: flex; gap: .5rem; margin-top: .3rem; }
+.term-files { list-style: none; margin: .4rem 0 0; padding: 0; max-height: 240px; overflow: auto;
+  border: 1px solid var(--tt-border); border-radius: 6px; }
+.term-files li { padding: .25rem .5rem; cursor: pointer; display: flex; gap: .5rem; font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: .85rem; }
+.term-files li:hover, .term-files li:focus { background: var(--tt-hover); outline: none; }
+.term-files li .term-size { margin-left: auto; color: var(--tt-muted); }
+.term-preview { max-height: 220px; overflow: auto; background: var(--tt-sunk); border-radius: 6px; padding: .5rem;
+  font-size: .8rem; margin: 0; white-space: pre; }
+
+.term-help h2 { margin-top: 1.5rem; }
+.term-help li { margin: .3rem 0; }

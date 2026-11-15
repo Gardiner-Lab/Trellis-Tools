@@ -8,6 +8,23 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **HPC Terminal** (`/terminal/`, a new service, `lab-suite-terminal`): a terminal in the browser on the lab's HPC
+  machines, over SSH.
+  - Members save connections (their user name on one of the lab's machines) and open them from a link, which can be
+    bookmarked or put on a notebook page.
+  - Logging in happens in the terminal: the password, and a one-time code if asked, go to the machine and are never
+    kept. No private key is stored and no SSH agent is used.
+  - Sessions are held by the server and carry on with the browser closed; the link reattaches, with what was printed
+    meanwhile. With *Keep my work in tmux* (the default) the work runs in tmux on the machine and outlives the service
+    too. A session with no browser attached for 12 hours is closed (`TERMINAL_KEEP_HOURS`).
+  - *Save a script to the notebook* (a file on the machine, read over SFTP) and *Save the session's text*, each as a
+    page under the day the session started (or another day chosen).
+  - Only machines an administrator adds can be reached, each checked against the host key it was added with; a
+    machine answering with another key is not logged in to. Nothing runs on the suite's server.
+- Its machine list and saved connections are in the `terminal-data` volume, which the nightly backup does not yet
+  include.
+
 ## [2.52.1] - 2026-11-15
 Pins Genome Browser 0.15.2; pins lab-suite-portal and lab-suite-backup 2.52.1.
 
