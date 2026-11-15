@@ -8,6 +8,21 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.54.0] - 2026-11-15
+Pins HPC Terminal 0.2.0; pins lab-suite-portal and lab-suite-backup 2.54.0.
+
+### Added
+- **HPC Terminal: an overview of open sessions** for administrators (everyone's) and lab leads and lab
+  administrators (their labs' members'): who is connected to which machine, since when and from where, never what
+  is on the screen; they can end a session.
+- **HPC Terminal: only the lab's networks.** `TERMINAL_ALLOWED_NETWORKS` (in `.env`) lists the networks it may
+  connect to, the HPC subnet; left empty, private networks only. Checked when a machine is added and on every
+  connection.
+
+### Changed
+- The HPC Terminal runs on a Docker network of its own, shared only with the proxy and the notebook, and reads the
+  suite's labs (read only) for the overview.
+
 ## [2.53.1] - 2026-11-15
 Pins HPC Terminal 0.1.1; pins lab-suite-portal and lab-suite-backup 2.53.1.
 
