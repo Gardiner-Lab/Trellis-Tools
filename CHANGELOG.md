@@ -8,6 +8,13 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.55.1] - 2026-11-16
+Pins lab-suite-portal and lab-suite-backup 2.55.1.
+
+### Fixed
+- **The HPC Terminal's health check** (`/terminal/health`) answers without signing in, like every other tool's, so
+  `scripts/check.sh` and monitoring see it as healthy instead of failing on the sign-in page.
+
 ## [2.55.0] - 2026-11-15
 Pins HPC Terminal 0.2.1; pins lab-suite-portal and lab-suite-backup 2.55.0.
 

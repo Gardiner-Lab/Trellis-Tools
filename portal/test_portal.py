@@ -95,7 +95,7 @@ def test_nothing_is_visible_before_signing_in(portal, path):
     assert check(client, path).status_code == 401
 
 
-@pytest.mark.parametrize('path', ['/health', '/editor/health', '/genome/health', '/backup/health', '/health?x=1'])
+@pytest.mark.parametrize('path', ['/health', '/editor/health', '/genome/health', '/backup/health', '/terminal/health', '/health?x=1'])
 def test_health_checks_stay_public(portal, path):
     _, client, _ = portal
     r = check(client, path)
