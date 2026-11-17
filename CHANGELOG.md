@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.55.2] - 2026-11-17
+Pins Sequence Editor 0.28.6; pins lab-suite-portal and lab-suite-backup 2.55.2.
+
+### Changed
+- **Sequence Editor: who deletes a sequence.** The Library shows the delete button only on the sequences you may
+  delete: those you uploaded, those of the members of a lab you are lab admin or lead of, and, for administrators,
+  all. Whoever uploaded a sequencing read may also remove it, even on a lab mate's plasmid.
+
 ## [2.55.1] - 2026-11-16
 Pins lab-suite-portal and lab-suite-backup 2.55.1.
 
