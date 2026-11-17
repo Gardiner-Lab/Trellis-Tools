@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.56.0] - 2026-11-17
+Pins Lab Stocks 0.23.0 and Lab Notebook 0.27.0; pins lab-suite-portal and lab-suite-backup 2.56.0.
+
+### Added
+- **How and where to get rid of a chemical.** Lab Stocks records it on each chemical, chosen from the lab's
+  disposal routes (kept by its lab admin) or typed; a new bottle takes it from another with the same CAS number.
+- **A waste disposal box in the notebook.** Linking a chemical on a page adds it, with how to get rid of it, to a
+  box at the foot of the page; a protocol brings its box along. Table cells take @ links too.
+
 ## [2.55.3] - 2026-11-17
 Pins Sequence Editor 0.28.7; pins lab-suite-portal and lab-suite-backup 2.55.3.
 
