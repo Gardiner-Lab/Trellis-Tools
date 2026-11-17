@@ -761,6 +761,66 @@ def test_an_administrator_makes_someone_lab_admin(portal):
 
 
 # ---------------------------------------------------------------------------
+# The name shown for someone
+# ---------------------------------------------------------------------------
+
+def test_people_set_their_own_name_and_keep_their_username(portal):
+    module, client, _ = portal
+    sign_in(client, 'alice', 'alice-password')
+    assert client.get('/api/session').get_json()['user']['display_name'] is None
+    r = client.put('/api/account/name', json={'name': '  Alice   van  Dijk '})
+    assert r.status_code == 200 and r.get_json()['display_name'] == 'Alice van Dijk'
+    user = client.get('/api/session').get_json()['user']
+    assert (user['username'], user['display_name']) == ('alice', 'Alice van Dijk')
+    # Still signs in with the username.
+    client.post('/api/logout')
+    assert sign_in(client, 'alice', 'alice-password').status_code == 200
+    assert client.put('/api/account/name', json={'name': 'x' * 81}).status_code == 400
+    assert client.put('/api/account/name', json={'name': '<b>Alice</b>'}).status_code == 400
+    # Empty shows the username alone again.
+    assert client.put('/api/account/name', json={'name': ''}).get_json()['display_name'] is None
+    assert client.get('/api/session').get_json()['user']['display_name'] is None
+    assert client.put('/api/account/name', json={}).status_code == 200
+
+
+def test_administrators_and_lab_admins_rename_people(portal):
+    module, client, _ = portal
+    lab = gardiner(module)
+    other = module.labs.create('Smith Lab', 'boss')
+    for name in ('dave', 'fred'):
+        module.directory.create(name, f'{name}-password-1', is_admin=False)
+    module.labs.set_lab('alice', lab['id'])
+    module.labs.set_role('alice', 'lab_admin', lab['id'])
+    module.labs.set_lab('dave', lab['id'])
+    module.labs.set_lab('fred', other['id'])
+
+    # A member renames only themselves.
+    sign_in(client, 'dave', 'dave-password-1')
+    assert client.put('/api/people/fred/name', json={'name': 'Fred'}).status_code == 403
+    client.post('/api/logout')
+
+    # A lab admin: their lab's people, not another lab's, nor an administrator.
+    sign_in(client, 'alice', 'alice-password')
+    assert client.put('/api/people/dave/name', json={'name': 'Dave Jansen'}).status_code == 200
+    assert client.put('/api/people/fred/name', json={'name': 'Fred'}).status_code == 403
+    assert client.put('/api/people/boss/name', json={'name': 'Boss'}).status_code == 403
+    rows = {u['username']: u for u in client.get('/api/admin/overview').get_json()['users']}
+    assert rows['dave']['display_name'] == 'Dave Jansen' and rows['dave']['can_rename'] is True
+    assert rows['alice']['can_rename'] is True
+    client.post('/api/logout')
+
+    # An administrator: anyone.
+    sign_in(client, 'boss', 'boss-password')
+    assert client.put('/api/people/fred/name', json={'name': 'Fred Smit'}).status_code == 200
+    assert client.put('/api/people/nobody/name', json={'name': 'X'}).status_code == 404
+    rows = {u['username']: u for u in client.get('/api/admin/overview').get_json()['users']}
+    assert rows['fred']['display_name'] == 'Fred Smit' and all(u['can_rename'] for u in rows.values())
+    # A removed account takes its name with it.
+    assert client.delete('/api/admin/users/fred').status_code == 200
+    assert 'fred' not in module.labs.display_names()
+
+
+# ---------------------------------------------------------------------------
 # Hosting: guesses, HSTS and the Hosting tab
 # ---------------------------------------------------------------------------
 

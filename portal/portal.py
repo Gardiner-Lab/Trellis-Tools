@@ -51,7 +51,7 @@ import activity
 import directory
 import labs
 
-APP_VERSION = '2.55.2'
+APP_VERSION = '2.55.3'
 
 # The first administrator's password on a new installation (MoClo creates
 # 'admin' with it). It is published, so it may be used once only: whoever
@@ -298,7 +298,8 @@ def session_status():
     user = None
     if account is not None:
         mine = labs.labs_of(account['username'])
-        user = {'username': account['username'], 'is_admin': account['is_admin'],
+        user = {'username': account['username'], 'display_name': labs.display_name(account['username']),
+                'is_admin': account['is_admin'],
                 'role': role_of(account), 'lab': mine[0]['lab'] if mine else None,
                 'labs': [{'lab': m['lab'], 'role': m['role']} for m in mine], 'must_change': must_change(),
                 'teaching': account['username'] in labs.teaching_accounts()}
@@ -479,6 +480,58 @@ def change_password():
 
 
 # ---------------------------------------------------------------------------
+# The name shown for someone. Their username stays as it is: every tool records
+# their work under it, and they sign in with it.
+# ---------------------------------------------------------------------------
+
+def _save_display_name(username: str, by: str):
+    try:
+        name = labs.set_display_name(username, str((json_body() or {}).get('name') or ''), by)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    return jsonify({'ok': True, 'username': username, 'display_name': name})
+
+
+@app.route('/api/account/name', methods=['PUT'])
+def set_own_name():
+    """Your own name, as shown beside your username. Empty shows the username alone again."""
+    account = signed_in_account()
+    if account is None:
+        return jsonify({'error': 'Sign in first'}), 401
+    if must_change():
+        return jsonify({'error': 'Choose a new password first, under My account'}), 403
+    if account['username'] in labs.teaching_accounts():
+        return jsonify({'error': 'This is a shared teaching account: its name stays as it is'}), 403
+    return _save_display_name(account['username'], account['username'])
+
+
+def _may_name(account, role, target):
+    """
+    None if this person may change the target's name, else the reason.
+    Administrators, anyone's. A lab admin, the name of someone in a lab they
+    run, unless that person is an administrator.
+    """
+    if role == 'admin' or target['username'] == account['username']:
+        return None
+    run = managed_labs(account, role, 'lab_admin')
+    if run and not target['is_admin'] and any(m['lab_id'] in run for m in labs.labs_of(target['username'])):
+        return None
+    return "Only an administrator, or a lab admin of their lab, can change someone else's name"
+
+
+@app.route('/api/people/<username>/name', methods=['PUT'])
+@require_lab_admin
+def set_person_name(account, role, username):
+    target, missing = _target_or_404(username)
+    if missing:
+        return missing
+    refused = _may_name(account, role, target)
+    if refused:
+        return jsonify({'error': refused}), 403
+    return _save_display_name(target['username'], account['username'])
+
+
+# ---------------------------------------------------------------------------
 # Label stock the lab buys itself
 # ---------------------------------------------------------------------------
 # The labels pages of Lab Stocks and the Seed Bank offer LabTAG's labels, which are in
@@ -559,6 +612,7 @@ def overview(account, role):
     run = managed_labs(account, role, 'lab_admin')
     everyone = labs.all_lab_members()
     gone = labs.archived()
+    names = labs.display_names()
     people = []
     for person in directory.all_accounts():
         theirs = everyone.get(person['username'], [])
@@ -566,7 +620,9 @@ def overview(account, role):
         if role != 'admin' and not shown:
             continue
         first = theirs[0] if theirs else {}
-        people.append({'username': person['username'], 'created_at': person.get('created_at'),
+        people.append({'username': person['username'], 'display_name': names.get(person['username']),
+                       'can_rename': _may_name(account, role, person) is None,
+                       'created_at': person.get('created_at'),
                        'is_admin': bool(person['is_admin']),
                        'role': 'admin' if person['is_admin'] else
                        max((m['role'] for m in theirs), key=labs.RANK.get, default='member'),

@@ -144,3 +144,7 @@ tr.archived td { color: var(--muted); }
 
 /* A button that looks like a link (the sign-in page's "Fill it in"). */
 .btn-link { background: none; border: 0; padding: 0; color: var(--tt-link, var(--tt-green)); text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* Rename, beside a name in the people tables. */
+td .rename { margin-left: .4rem; padding: .1rem .45rem; font-size: .75rem; }
+.muted { color: var(--muted); }

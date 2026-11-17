@@ -186,6 +186,10 @@ window.addEventListener('hashchange', () => select(location.hash.slice(1)));
 
 /* --- My account ------------------------------------------------------------ */
 
+function showWho() {
+  $('who').textContent = `${me.display_name ? `${me.display_name} (${me.username})` : me.username} · ${ROLE_NAMES[me.role]}`;
+}
+
 const accountTab = {
   id: 'account', title: 'My account', glyph: 'person', section: 'me',
   show(panel) {
@@ -208,6 +212,23 @@ const accountTab = {
         toast('Password changed. You are signed out everywhere else.');
       } catch (err) { toast(err.message, 'bad'); }
     });
+    const nameForm = el('form', { class: 'narrow' },
+      el('div', { class: 'field' }, el('label', { for: 'ownName' }, 'Name shown'),
+        el('input', { id: 'ownName', maxlength: 80, autocomplete: 'name', value: me.display_name || '',
+                      placeholder: 'e.g. Ana de Vries' }),
+        el('span', { class: 'hint' }, `Shown beside your username, ${me.username}, which stays as it is: you sign in `
+          + 'with it, and the tools record your work under it. Leave empty to show the username alone.')),
+      el('button', { class: 'btn', type: 'submit' }, 'Save name'));
+    nameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await api('PUT', 'api/account/name', { name: $('ownName').value });
+        me.display_name = res.display_name;
+        $('ownName').value = res.display_name || '';
+        showWho();
+        toast(res.display_name ? `Your name is now shown as ${res.display_name}.` : 'Your username alone is shown again.');
+      } catch (err) { toast(err.message, 'bad'); }
+    });
     panel.replaceChildren(
       me.must_change ? el('div', { class: 'alert warn' },
         'You signed in with the default password, which is published. Choose a new one to continue: '
@@ -215,12 +236,13 @@ const accountTab = {
       el('div', { class: 'card' },
       el('h2', {}, 'My account'),
       el('dl', { class: 'facts' },
+        el('dt', {}, 'Name'), el('dd', {}, me.display_name || el('span', { class: 'muted' }, 'none set')),
         el('dt', {}, 'Username'), el('dd', {}, me.username),
         el('dt', {}, 'Lab'), el('dd', {}, me.lab || 'None yet: ask an administrator'),
         el('dt', {}, 'Role'), el('dd', {}, ROLE_NAMES[me.role])),
       me.teaching ? el('p', { class: 'hint' }, 'This is a shared teaching account: its password stays as it is, ',
         'so everyone can sign in with it. Its data is set back to the demo from time to time.')
-        : [el('h3', {}, 'Change your password'), form]));
+        : [me.must_change ? '' : [el('h3', {}, 'Your name'), nameForm], el('h3', {}, 'Change your password'), form]));
   },
 };
 
@@ -522,6 +544,30 @@ function restoreButton(u, tab) {
 
 const leftOn = (u) => `${euDate(u.archived.archived_at)}${u.archived.archived_by ? ` by ${u.archived.archived_by}` : ''}`;
 
+/* Someone's name and, under it, their username; with Rename for those who may change it. */
+function personCell(u, tab, extra = null) {
+  const cell = el('td', {});
+  const draw = () => cell.replaceChildren(
+    u.display_name ? el('span', {}, u.display_name, el('span', { class: 'sub' }, u.username)) : u.username,
+    extra || '',
+    u.can_rename ? el('button', { class: 'btn small secondary rename', type: 'button',
+                                  title: `Change the name shown for ${u.username}; the username stays as it is`,
+                                  onclick: edit }, 'Rename') : '');
+  function edit() {
+    const input = el('input', { type: 'text', maxlength: 80, value: u.display_name || '', placeholder: 'Name shown',
+                                'aria-label': `Name shown for ${u.username}` });
+    const save = () => act(api('PUT', `api/people/${encodeURIComponent(u.username)}/name`, { name: input.value }),
+      input.value.trim() ? `${u.username} is now shown as ${input.value.trim()}.` : `${u.username} is shown by username again.`, tab);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') draw(); });
+    cell.replaceChildren(input, el('span', { class: 'sub' }, `Username: ${u.username}`),
+      el('button', { class: 'btn small', type: 'button', onclick: save }, 'Save'), ' ',
+      el('button', { class: 'btn small secondary', type: 'button', onclick: draw }, 'Cancel'));
+    input.focus();
+  }
+  draw();
+  return cell;
+}
+
 function membersCard(data, lab, tab) {
   const manage = data.manages.includes(lab.id);
   const here = (u) => (u.labs || []).find((m) => m.lab_id === lab.id);
@@ -540,7 +586,7 @@ function membersCard(data, lab, tab) {
         el('button', { class: 'btn small secondary', type: 'button', onclick: reset }, 'Keep')),
     }, 'Remove from lab') : '');
     reset();
-    return el('tr', {}, el('td', {}, u.username), el('td', {}, u.is_admin ? 'Administrator' : ROLE_NAMES[here(u).role]),
+    return el('tr', {}, personCell(u, tab), el('td', {}, u.is_admin ? 'Administrator' : ROLE_NAMES[here(u).role]),
       el('td', {}, euDate(u.created_at)), acting ? actions : null);
   };
   // A lab lead who does not run the lab still archives its members, and sees their reports.
@@ -582,15 +628,15 @@ function membersCard(data, lab, tab) {
       : 'As this lab\'s lead you can open and change its members\' plasmids, as an administrator can. When a member '
         + 'leaves, archive them: their work stays for the lab, and Report shows everything they made, in every tool.'),
     el('div', { class: 'table-scroll' }, el('table', {},
-      el('thead', {}, el('tr', {}, el('th', {}, 'Username'), el('th', {}, 'Role here'), el('th', {}, 'Joined'),
+      el('thead', {}, el('tr', {}, el('th', {}, 'Name'), el('th', {}, 'Role here'), el('th', {}, 'Joined'),
         acting ? el('th', {}) : null)),
       el('tbody', {}, people.map(row)))),
     left.length ? el('details', { class: 'left-list' },
       el('summary', {}, `Archived (${left.length})`),
       el('p', { class: 'hint' }, 'Archived: their work stays here for the lab\u2019s leads and lab admins, in every tool.'),
       el('div', { class: 'table-scroll' }, el('table', {},
-        el('thead', {}, el('tr', {}, el('th', {}, 'Username'), el('th', {}, 'Role here'), el('th', {}, 'Archived'), el('th', {}))),
-        el('tbody', {}, left.map((u) => el('tr', { class: 'archived' }, el('td', {}, u.username),
+        el('thead', {}, el('tr', {}, el('th', {}, 'Name'), el('th', {}, 'Role here'), el('th', {}, 'Archived'), el('th', {}))),
+        el('tbody', {}, left.map((u) => el('tr', { class: 'archived' }, personCell(u, tab),
           el('td', {}, ROLE_NAMES[here(u).role]), el('td', {}, leftOn(u)), el('td', { class: 'actions' }, reportLink(u) || '', ' ', restoreButton(u, tab) || ''))))))) : null,
     manage ? el('h3', {}, `Add someone to ${lab.name}`) : null,
     manage ? el('p', { class: 'hint' }, 'A new account, for someone who has none, or an existing one: someone in '
@@ -743,7 +789,7 @@ const usersTab = {
         + 'Lab admins can do all that, and also add people to their lab and take them out of it. Someone can be in '
         + 'several labs, with a role in each.'),
       el('div', { class: 'table-scroll' }, el('table', {},
-        el('thead', {}, el('tr', {}, el('th', {}, 'Username'), el('th', {}, 'Labs, and their role in each'),
+        el('thead', {}, el('tr', {}, el('th', {}, 'Name'), el('th', {}, 'Labs, and their role in each'),
           el('th', {}, 'Administrator'), el('th', {}, 'Joined'), el('th', {}))),
         el('tbody', {}, data.users.map((u) => userRow(u, data, labOptions, roleOptions, this))))),
       el('h3', {}, 'Add an account'),
@@ -803,7 +849,7 @@ function userRow(u, data, labOptions, roleOptions, tab) {
   }
   reset();
   return el('tr', { class: u.archived ? 'archived' : '' },
-    el('td', {}, u.username, u.archived ? el('span', { class: 'sub' }, `Archived ${leftOn(u)}`) : null), el('td', {}, lab), el('td', { class: 'center' }, role),
+    personCell(u, tab, u.archived ? el('span', { class: 'sub' }, `Archived ${leftOn(u)}`) : null), el('td', {}, lab), el('td', { class: 'center' }, role),
     el('td', {}, euDate(u.created_at)), actions);
 }
 
@@ -847,7 +893,7 @@ async function copyText(code) {
   } catch {
     return;
   }
-  $('who').textContent = `${me.username} · ${ROLE_NAMES[me.role]}`;
+  showWho();
   // Signed in with the default password: only My account, to change it.
   const own = me.must_change ? [accountTab] : [accountTab, labsTab, usersTab, hostingTab, terminalTab].filter((t) => allowed(t.roles));
   const fromTools = me.must_change ? [] : (await toolTabs()).map(frameTab);

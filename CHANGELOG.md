@@ -8,6 +8,20 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.55.3] - 2026-11-17
+Pins Sequence Editor 0.28.7; pins lab-suite-portal and lab-suite-backup 2.55.3.
+
+### Added
+- **A name shown beside the username.** People set theirs under My account; administrators set anyone's, and lab
+  admins those of the people in their labs, with Rename on the Accounts tab and the lab member lists. The username
+  stays as it is: people sign in with it and the tools record their work under it. The name is shown in the
+  dashboard's header and people tables, and kept in suite.db (`display_names`) for the tools to read.
+
+### Changed
+- **Sequence Editor: My sequences is one list** of the lab's sequences and the MoClo library, with Add a sequence
+  at the top, part-type filters as in the MoClo tool (promoter, CDS, terminator, other or unknown part...), Only
+  mine, a new Only my lab, and sorting by date, name, part type or length.
+
 ## [2.55.2] - 2026-11-17
 Pins Sequence Editor 0.28.6; pins lab-suite-portal and lab-suite-backup 2.55.2.
 

@@ -111,6 +111,15 @@ CREATE TABLE IF NOT EXISTS archived (
     archived_at TEXT NOT NULL,
     archived_by TEXT
 );
+-- The name shown for someone, beside the username they sign in with, which stays
+-- as it is (every tool records work under it). Set by themselves, an
+-- administrator, or a lab admin of their lab. The tools may read this table.
+CREATE TABLE IF NOT EXISTS display_names (
+    username TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    updated_by TEXT,
+    updated_at TEXT NOT NULL
+);
 -- Wrong passwords, by account and address, for limiting guesses (portal.py).
 CREATE TABLE IF NOT EXISTS signin_failures (
     username TEXT NOT NULL,
@@ -883,9 +892,47 @@ def restore(username: str) -> None:
         conn.execute('DELETE FROM archived WHERE username = ?', (username,))
 
 
+MAX_DISPLAY_NAME = 80
+
+
+def display_names() -> Dict[str, str]:
+    """username -> the name shown for them, for those who have one."""
+    with connect() as conn:
+        return {r['username']: r['name'] for r in conn.execute('SELECT username, name FROM display_names')}
+
+
+def display_name(username: str) -> Optional[str]:
+    with connect() as conn:
+        row = conn.execute('SELECT name FROM display_names WHERE username = ?', (username,)).fetchone()
+        return row['name'] if row else None
+
+
+def set_display_name(username: str, name: Optional[str], by: str) -> Optional[str]:
+    """
+    The name shown for someone; empty clears it, so their username is shown
+    again. Spaces are tidied. Returns the name kept, or None.
+    """
+    from datetime import datetime, timezone
+    name = _clean(name or '')
+    if any(ord(c) < 32 or c in '<>' for c in name):
+        raise ValueError('A name cannot contain < or > or control characters')
+    if len(name) > MAX_DISPLAY_NAME:
+        raise ValueError(f'Keep the name to {MAX_DISPLAY_NAME} characters')
+    with connect() as conn:
+        if not name:
+            conn.execute('DELETE FROM display_names WHERE username = ?', (username,))
+            return None
+        conn.execute('INSERT INTO display_names (username, name, updated_by, updated_at) VALUES (?, ?, ?, ?) '
+                     'ON CONFLICT(username) DO UPDATE SET name = excluded.name, updated_by = excluded.updated_by, '
+                     'updated_at = excluded.updated_at',
+                     (username, name, by, datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')))
+    return name
+
+
 def forget(username: str) -> None:
     """A removed account leaves its labs."""
     with connect() as conn:
+        conn.execute('DELETE FROM display_names WHERE username = ?', (username,))
         conn.execute('DELETE FROM archived WHERE username = ?', (username,))
         conn.execute('DELETE FROM lab_members WHERE username = ?', (username,))
         conn.execute('DELETE FROM members WHERE username = ?', (username,))
