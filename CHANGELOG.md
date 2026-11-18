@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.57.0] - 2026-11-18
+Pins Lab Notebook 0.28.0; pins lab-suite-portal and lab-suite-backup 2.57.0.
+
+### Added
+- **Priorities on the week's to-do list.** Each task in the notebook is High, Medium, normal or Low, in
+  traffic-light colours, and the list keeps them in that order; within a level, tasks are dragged (or moved with
+  Alt+↑ / Alt+↓) into order. A task moved on to next week keeps its priority.
+
 ## [2.56.0] - 2026-11-17
 Pins Lab Stocks 0.23.0 and Lab Notebook 0.27.0; pins lab-suite-portal and lab-suite-backup 2.56.0.
 
