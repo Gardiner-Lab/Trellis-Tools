@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.59.0] - 2026-11-19
+Pins Lab Notebook 0.30.0; pins lab-suite-portal and lab-suite-backup 2.59.0.
+
+### Changed
+- **The Lab Notebook shows people by their display names.** The name set on the dashboard now shows wherever
+  the notebook named someone by username: notebook titles, the lab's notebooks, the signed-in name, who saved or
+  ticked something, sharing, bookings, protocols and PDF and Word exports. Without one, the username shows.
+
 ## [2.58.0] - 2026-11-19
 Pins Lab Notebook 0.29.0; pins lab-suite-portal and lab-suite-backup 2.58.0.
 
