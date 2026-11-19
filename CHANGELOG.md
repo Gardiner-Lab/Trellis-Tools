@@ -8,6 +8,16 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.60.0] - 2026-11-19
+Pins MoClo Library Tool 1.23.0; pins lab-suite-portal and lab-suite-backup 2.60.0.
+
+### Changed
+- **A part file with more cloning sites than a part can have says why it was refused.** A MoClo part has one
+  pair of Type IIS sites, one at each end; a .gb from outside may carry more, and the upload then failed on a
+  bare "Sequence must start with the 5' overhang". It now says how many sites were found of each motif, what
+  the first pair releases against the overhangs the file declares, and asks the person to go back to their
+  sequence and upload only the part.
+
 ## [2.59.0] - 2026-11-19
 Pins Lab Notebook 0.30.0; pins lab-suite-portal and lab-suite-backup 2.59.0.
 
