@@ -8,6 +8,16 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.58.0] - 2026-11-19
+Pins Lab Notebook 0.29.0; pins lab-suite-portal and lab-suite-backup 2.58.0.
+
+### Changed
+- **Lab admins no longer read each other's notebooks.** Someone who is lab admin of any lab, even one where
+  they are only a member here, is closed to the other lab admins as well as to lab leads, unless they share
+  a page or their notebook. A lab admin still reads the notebooks of their lab's members and lab leads.
+- **A lab admin who has left** is open again only to the leads and lab admins of the lab they were lab admin
+  of, not of labs they were only a member of.
+
 ## [2.57.0] - 2026-11-18
 Pins Lab Notebook 0.28.0; pins lab-suite-portal and lab-suite-backup 2.57.0.
 
