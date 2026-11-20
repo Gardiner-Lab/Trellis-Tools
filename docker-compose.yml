@@ -64,7 +64,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.61.0}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.61.1}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -354,7 +354,7 @@ services:
   # database). Lab Stocks and Booking link to its places; what a place holds and
   # when it is booked the browser asks those tools, so their rules hold.
   map:
-    image: ghcr.io/gardiner-lab/lab-map:${MAP_VERSION:-0.1.0}
+    image: ghcr.io/gardiner-lab/lab-map:${MAP_VERSION:-0.1.1}
     container_name: lab-map
     depends_on:
       moclo:
@@ -520,8 +520,11 @@ services:
   # attachments into PDFs so the notebook, the Seed Bank and Lab Stocks can
   # show them in the browser. Only those three reach it, on a network of its
   # own with no way out to the internet, so the files never leave the server.
+  # LibreOffice brings a Java runtime with it, which security scans look at:
+  # keep this pin current. A server that needs another version sets
+  # CONVERTER_VERSION in .env, which a git pull never touches.
   converter:
-    image: gotenberg/gotenberg:8.15.3
+    image: gotenberg/gotenberg:${CONVERTER_VERSION:-8.40.0}
     container_name: lab-converter
     command: ["gotenberg", "--api-timeout=120s", "--libreoffice-auto-start=true",
               "--chromium-disable-routes=true", "--webhook-disable=true",
@@ -537,7 +540,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.1}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -578,7 +581,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.1}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -616,7 +619,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.1}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:

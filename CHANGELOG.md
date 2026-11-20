@@ -8,6 +8,20 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.61.1] - 2026-11-20
+Pins the file converter, Gotenberg, 8.40.0; pins Lab Map 0.1.1; pins lab-suite-portal and lab-suite-backup 2.61.1.
+
+### Security
+- **The file converter no longer carries Java 17.0.13.** Gotenberg 8.15.3's LibreOffice came with OpenJDK
+  17.0.13, which security scans of the server report as vulnerable. Gotenberg 8.40.0 has LibreOffice 26.8 and
+  Java 21.0.13 (October 2026), and converts Word, PowerPoint and Excel files as before. After updating, remove
+  the old image so scans stop finding its files on disk: `docker image rm gotenberg/gotenberg:8.15.3`.
+- **The converter's version can be set in `.env`** (`CONVERTER_VERSION`), as the tools' can: a server that runs a
+  newer one than the suite pins keeps it through a git pull, instead of editing `docker-compose.yml`.
+
+### Changed
+- Lab Map's buttons use the suite's own icons, as the other tools do (Lab Map 0.1.1).
+
 ## [2.61.0] - 2026-11-20
 Adds Lab Map 0.1.0; pins Lab Stocks 0.24.0 and Booking 0.6.0; pins lab-suite-portal and lab-suite-backup 2.61.0.
 
