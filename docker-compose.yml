@@ -46,6 +46,7 @@ services:
       - seeds
       - stocks
       - booking
+      - map
       - genome-browser
       - backup-console
     restart: unless-stopped
@@ -63,7 +64,7 @@ services:
   # users table) and keeps the labs, their registration codes and who is in
   # which lab in suite-data, which the tools read.
   portal:
-    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.60.0}
+    image: ghcr.io/gardiner-lab/lab-suite-portal:${SUITE_VERSION:-2.61.0}
     container_name: lab-portal
     # New accounts go into MoClo's directory, so it must exist first.
     depends_on:
@@ -282,7 +283,7 @@ services:
   # the editor's plasmids, the notebook's links and the Seed Bank's lab codes,
   # and writes only to its own volume.
   stocks:
-    image: ghcr.io/gardiner-lab/lab-stocks:${STOCKS_VERSION:-0.23.0}
+    image: ghcr.io/gardiner-lab/lab-stocks:${STOCKS_VERSION:-0.24.0}
     container_name: lab-stocks
     depends_on:
       moclo:
@@ -303,6 +304,8 @@ services:
       - SUITE_LOGOUT_URL=/account/logout
       - EDITOR_URL=/editor
       - NOTEBOOK_URL=/notebook
+      # Where each stock is on the lab's floor plan.
+      - MAP_URL=/map
       - SUITE_PUBLIC_URL=${SUITE_PUBLIC_URL:-}
       # Copies the stocks to eLabJournal's inventory when set; see .env.example.
       - ELAB_URL=${ELAB_URL:-}
@@ -321,7 +324,7 @@ services:
   # chair groups they are shared with. It reads the account directory and the
   # suite's labs, and writes only to its own volume; the notebook reads it.
   booking:
-    image: ghcr.io/gardiner-lab/lab-booking:${BOOKING_VERSION:-0.5.0}
+    image: ghcr.io/gardiner-lab/lab-booking:${BOOKING_VERSION:-0.6.0}
     container_name: lab-booking
     depends_on:
       moclo:
@@ -336,11 +339,40 @@ services:
       - SUITE_LOGIN_URL=/account/login
       - SUITE_LOGOUT_URL=/account/logout
       - NOTEBOOK_URL=/notebook
+      # Where each room or piece of equipment stands on the lab's floor plan.
+      - MAP_URL=/map
       # The lab's time: opening hours, and which day a booking is on.
       - TZ=${TZ:-Europe/Amsterdam}
     restart: unless-stopped
     expose:
       - "5007"
+
+  # The Lab Map, at /map/: each lab's floor plans, with its fridges, freezers,
+  # cabinets and equipment marked. Its own repository, published as lab-map:
+  # https://github.com/Gardiner-Lab/lab-map. It reads the account directory and
+  # labs, and writes only to its own volume (the drawings are kept in its
+  # database). Lab Stocks and Booking link to its places; what a place holds and
+  # when it is booked the browser asks those tools, so their rules hold.
+  map:
+    image: ghcr.io/gardiner-lab/lab-map:${MAP_VERSION:-0.1.0}
+    container_name: lab-map
+    depends_on:
+      moclo:
+        condition: service_healthy
+    volumes:
+      - map-data:/map
+      - moclo-data:/moclo:ro
+      - suite-data:/suite:ro
+    environment:
+      - URL_PREFIX=/map
+      - SUITE_HOME_URL=/
+      - SUITE_LOGIN_URL=/account/login
+      - SUITE_LOGOUT_URL=/account/logout
+      - STOCKS_URL=/stocks
+      - BOOKING_URL=/booking
+    restart: unless-stopped
+    expose:
+      - "5010"
 
   # The genome browser, at /genome/: reference genomes, coverage and feature
   # tracks (BigWig/BED/GFF), and igv.js views, with links to plasmids, parts
@@ -505,7 +537,7 @@ services:
       - converter
 
   backup:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.60.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.0}
     container_name: lab-backup
     volumes:
       # Read-only: the backup never needs to change the live data.
@@ -516,6 +548,7 @@ services:
       - seeds-data:/seeds:ro
       - stocks-data:/stocks:ro
       - booking-data:/booking:ro
+      - map-data:/map:ro
       # The Genome Browser: its genome.db is copied; the reference genomes and
       # tracks on this volume are not, being far too large for a nightly
       # archive. See docs/BACKUP.md.
@@ -545,7 +578,7 @@ services:
   # access to the volumes in order to restore, which is why the nightly job is
   # a separate service that does not.
   backup-console:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.60.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.0}
     container_name: lab-backup-console
     command: ["api"]
     volumes:
@@ -556,6 +589,7 @@ services:
       - seeds-data:/seeds
       - stocks-data:/stocks
       - booking-data:/booking
+      - map-data:/map
       - genome-data:/genome
       - terminal-data:/terminal-data
       - ${BACKUP_ROOT:-/mnt}:/mnt
@@ -582,7 +616,7 @@ services:
   # deliberately does not have. Kept behind a profile so it never starts with
   # the stack; `make restore` is the way in.
   restore:
-    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.60.0}
+    image: ghcr.io/gardiner-lab/lab-suite-backup:${SUITE_VERSION:-2.61.0}
     container_name: lab-restore
     profiles: ["restore"]
     volumes:
@@ -593,6 +627,7 @@ services:
       - seeds-data:/seeds
       - stocks-data:/stocks
       - booking-data:/booking
+      - map-data:/map
       - genome-data:/genome
       - terminal-data:/terminal-data
       - ${BACKUP_ROOT:-/mnt}:/mnt
@@ -623,6 +658,8 @@ volumes:
   stocks-data:
   # Booking: rooms and equipment, and their bookings.
   booking-data:
+  # The Lab Map: floor plans, the places marked on them, and the drawings.
+  map-data:
   # The genome browser: reference genomes, tracks (BigWig/BED/GFF), and the
   # conversion scratch and job database.
   genome-data:

@@ -8,6 +8,23 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.61.0] - 2026-11-20
+Adds Lab Map 0.1.0; pins Lab Stocks 0.24.0 and Booking 0.6.0; pins lab-suite-portal and lab-suite-backup 2.61.0.
+
+### Added
+- **Lab Map, at `/map/`: each lab's floor plan, with its fridges, freezers, cabinets and equipment.** A lab admin
+  uploads the plan, a PDF from the architect or facilities or a picture of it. A PDF's own equipment labels (KK a
+  fridge, VR or -20 a freezer, -80, Kast a cabinet, FC a flow cabinet, BSC, INC...) are read with their positions,
+  and the outline drawn round each is found in the drawing, so the places come as suggestions to tick rather than
+  to draw; anything else is drawn as a box or an outline. Members of the lab pan, zoom and search the plan. A
+  freezer or cabinet lists the stocks kept in it; a piece of equipment says whether it is free now, shows today's
+  bookings and opens its calendar. Maps belong to one lab: its members see them, its lab admins change them.
+- **Stocks and equipment take you to their place on the map.** Every kind of stock in Lab Stocks has a place on the
+  map, chosen from the map's fridges, freezers and cabinets; the lists have a Place column, sortable, and clicking
+  a place, there or on a stock's page, opens the map on it. In Booking, a room or machine marked on the map links
+  to it from its calendar, the list of rooms and equipment, and My bookings.
+- The Lab Map's database, drawings included, is in the nightly backup and restored with the others.
+
 ## [2.60.0] - 2026-11-19
 Pins MoClo Library Tool 1.23.0; pins lab-suite-portal and lab-suite-backup 2.60.0.
 

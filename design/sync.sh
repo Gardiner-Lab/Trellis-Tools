@@ -8,7 +8,7 @@ here="$(cd "$(dirname "$0")/.." && pwd)"
 parent="$(dirname "$here")"
 # The suite's own pages (the sign-in service serves them at /account/trellis.css).
 cp "$here/design/trellis.css" "$here/portal/pages/trellis.css"
-for repo in moclo-library-tool plasmid-editor lab-notebook seed-bank lab-stocks lab-booking genome-browser; do
+for repo in moclo-library-tool plasmid-editor lab-notebook seed-bank lab-stocks lab-booking lab-map genome-browser; do
     # The Genome Browser keeps its assets in static/ at the top of the repository.
     if [ "$repo" = genome-browser ]; then base="$parent/$repo"; else base="$parent/$repo/app"; fi
     dir="$base/static/trellis"

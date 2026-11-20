@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Lab Map">
+  <title>Lab Map</title>
+  <path d="M8 14L22 9L42 15L56 10V50L42 55L22 49L8 54Z" fill="none" stroke="#8b5a2b" stroke-width="4.2" stroke-linejoin="round"/><path d="M22 9V49M42 15V55" stroke="#8b5a2b" stroke-width="3"/><path d="M32 41C32 41 22 31.5 22 25.5A10 10 0 0 1 42 25.5C42 31.5 32 41 32 41Z" fill="#2f8f46" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/><circle cx="32" cy="25.5" r="3.6" fill="#fff"/>
+</svg>

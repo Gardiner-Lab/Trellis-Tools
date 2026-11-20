@@ -52,6 +52,12 @@ services:
     image: lab-booking:local
     pull_policy: never
 
+  map:
+    build:
+      context: ${MAP_SRC:-../lab-map}
+    image: lab-map:local
+    pull_policy: never
+
   # The web service and the worker are the one image, built once.
   genome-browser:
     build:

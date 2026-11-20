@@ -107,6 +107,24 @@
       "manifest": "/booking/suite-manifest.json"
     },
     {
+      "id": "map",
+      "name": "Lab Map",
+      "icon": "🗺️",
+      "image": "/account/icons/map.svg",
+      "colour": "#3f7563",
+      "href": "/map/",
+      "summary": "Your lab's floor plan with its fridges, freezers, cabinets and equipment: click a freezer to see what is in it, a machine to book it.",
+      "points": [
+        "Upload the architect's PDF: the fridges, freezers and equipment it labels are suggested",
+        "Click a freezer or cabinet for the stocks kept in it, from Lab Stocks",
+        "Click a machine for today's bookings, and book it in Booking",
+        "Stocks and equipment link back to their place on the map"
+      ],
+      "health": "/map/health",
+      "status": "live",
+      "manifest": "/map/suite-manifest.json"
+    },
+    {
       "id": "genome",
       "name": "Genome Browser",
       "icon": "🧫",

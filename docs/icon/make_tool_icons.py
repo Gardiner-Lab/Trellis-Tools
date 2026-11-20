@@ -95,6 +95,13 @@ icons.append(icon('booking', 'Booking',
                   f'<path d="M22 8V17M42 8V17" stroke="{BROWN}" stroke-width="4.2" stroke-linecap="round"/>'
                   f'<path d="M21 39.5L29 47L44 32" fill="none" stroke="{GREEN}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'))
 
+# Lab Map: a folded map, a green pin on it.
+icons.append(icon('map', 'Lab Map',
+                  f'<path d="M8 14L22 9L42 15L56 10V50L42 55L22 49L8 54Z" fill="none" stroke="{BROWN}" stroke-width="4.2" stroke-linejoin="round"/>'
+                  f'<path d="M22 9V49M42 15V55" stroke="{BROWN}" stroke-width="3"/>'
+                  f'<path d="M32 41C32 41 22 31.5 22 25.5A10 10 0 0 1 42 25.5C42 31.5 32 41 32 41Z" fill="{GREEN}" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'
+                  f'<circle cx="32" cy="25.5" r="3.6" fill="#fff"/>'))
+
 # Genome Browser: a stretch of chromosome with its ruler, and a gene on it - green exons joined by
 # an intron, reading rightwards.
 icons.append(icon('genome', 'Genome Browser',

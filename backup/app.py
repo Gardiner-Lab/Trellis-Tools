@@ -39,7 +39,7 @@ from flask import Flask, jsonify, redirect, request, send_file, session
 import storage
 from storage import StorageError
 
-APP_VERSION = '2.60.0'
+APP_VERSION = '2.61.0'
 
 CONFIG_DIR = Path(os.environ.get('CONFIG_STORE', '/config-store'))
 SETTINGS_FILE = CONFIG_DIR / 'settings.json'
@@ -64,6 +64,8 @@ DATABASES = {
     'seeds.db': Path(os.environ.get('SEEDS_DB', '/seeds/seeds.db')),
     'stocks.db': Path(os.environ.get('STOCKS_DB', '/stocks/stocks.db')),
     'booking.db': Path(os.environ.get('BOOKING_DB', '/booking/booking.db')),
+    # The Lab Map: floor plans, their places, and the drawings themselves.
+    'map.db': Path(os.environ.get('MAP_DB', '/map/map.db')),
     # The Genome Browser's own database. The reference genomes and tracks beside
     # it on that volume are not in an archive at all: see docs/BACKUP.md.
     'genome.db': Path(os.environ.get('GENOME_DB', '/genome/genome.db')),

@@ -103,6 +103,7 @@ gated "/notebook/"        "Lab Notebook pages"
 gated "/seeds/"           "Seed Bank pages"
 gated "/stocks/"          "Lab Stocks pages"
 gated "/booking/"         "Booking pages"
+gated "/map/"             "Lab Map pages"
 gated "/genome/"          "Genome Browser pages"
 gated "/terminal/"        "HPC Terminal pages"
 route "/editor"           301 "/editor goes to /editor/"
@@ -110,6 +111,7 @@ route "/notebook"         301 "/notebook goes to /notebook/"
 route "/seeds"            301 "/seeds goes to /seeds/"
 route "/stocks"           301 "/stocks goes to /stocks/"
 route "/booking"          301 "/booking goes to /booking/"
+route "/map"              301 "/map goes to /map/"
 route "/genome"           301 "/genome goes to /genome/"
 route "/terminal"         301 "/terminal goes to /terminal/"
 
@@ -121,6 +123,7 @@ tool "/notebook/health" "Lab Notebook"      NOTEBOOK_VERSION lab-notebook
 tool "/seeds/health"    "Seed Bank"         SEEDS_VERSION    seed-bank
 tool "/stocks/health"   "Lab Stocks"        STOCKS_VERSION   lab-stocks
 tool "/booking/health"  "Booking"           BOOKING_VERSION  lab-booking
+tool "/map/health"      "Lab Map"           MAP_VERSION      lab-map
 tool "/genome/health"   "Genome Browser"    GENOME_VERSION   genome-browser
 tool "/terminal/health" "HPC Terminal"      TERMINAL_VERSION hpc-terminal
 tool "/backup/health"   "backup console"    SUITE_VERSION    lab-suite-backup

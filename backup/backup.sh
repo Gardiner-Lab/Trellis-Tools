@@ -156,6 +156,7 @@ backup_db "Lab Notebook"   "${NOTEBOOK_DB:-/notebook/notebook.db}"
 backup_db "Seed Bank"      "${SEEDS_DB:-/seeds/seeds.db}"
 backup_db "Lab Stocks"     "${STOCKS_DB:-/stocks/stocks.db}"
 backup_db "Booking"        "${BOOKING_DB:-/booking/booking.db}"
+backup_db "Lab Map"        "${MAP_DB:-/map/map.db}"
 backup_db "Genome Browser" "${GENOME_DB:-/genome/genome.db}"
 backup_db "HPC Terminal"   "${TERMINAL_DB:-/terminal-data/terminal.db}"
 
