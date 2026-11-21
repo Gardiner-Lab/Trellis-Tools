@@ -88,7 +88,9 @@ and bookings fall in the current week.
   drawn on by hand and linked to its calendar in Booking. The plan itself is
   [data/demo-floor-plan.pdf](data/demo-floor-plan.pdf), drawn by
   [data/make-floor-plan.py](data/make-floor-plan.py) (PyMuPDF) — an example, not a
-  real building.
+  real building. The −80 freezer has a map of its own inside it, [data/demo-freezer-inside.png](data/demo-freezer-inside.png) from
+  [data/make-freezer-inside.py](data/make-freezer-inside.py), with its five towers marked; tower 3 is given
+  the words `box 3`, which is where the demo's glycerol stocks say they are, so the tower lists them.
 
 ## Resetting
 

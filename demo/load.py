@@ -540,13 +540,51 @@ class Demo:
             ('Cabinet', 'Lab 2.12'): ('Poison cabinet', 'poison cabinet'),
         }
         done = set()
+        renamed = {}
         for place in places:
             key = (place['name'], (place.get('room') or '').split(' (')[0])
             if key in wanted and key not in done:
                 name, match = wanted[key]
                 m.put(f'/map/api/places/{place["id"]}', {'name': name, 'match': match})
+                renamed[name] = place['id']
                 done.add(key)
         say(f'{len(done)} of them given the words that find their stocks: the −80, the −20, a fridge, the poison cabinet')
+
+        # Inside the -80: a picture of the freezer with its towers marked on it, so clicking the
+        # freezer on the floor plan opens what is in it.
+        freezer_id = renamed.get('−80 °C freezer 1')
+        if freezer_id:
+            inside = m.post(f'/map/api/places/{freezer_id}/inside',
+                            files=[('file', 'demo-freezer-inside.png',
+                                    data_file('demo-freezer-inside.png'), 'image/png')],
+                            form={'name': 'Towers'})['map']
+            towers = {}
+            for i in range(5):
+                x = (70 + i * 172 + 6) / 1000
+                # The demo's glycerol stocks say "box 3", and box 3 lives in tower 3: that tower
+                # lists them, so the map reaches a tube without anyone re-filing anything.
+                match = f'tower {i + 1}, box 3' if i == 2 else f'tower {i + 1}'
+                made_t = m.post(f'/map/api/maps/{inside["id"]}/places',
+                                {'name': f'Tower {i + 1}', 'kind': 'rack', 'match': match,
+                                 'room': '−80 °C freezer 1',
+                                 'shape': {'rect': [round(x, 4), round(80 / 760, 4),
+                                                    round(158 / 1000, 4), round(600 / 760, 4)]}})
+                towers[i + 1] = (made_t.get('place') or made_t)['id']
+            say('the -80 freezer opens on a map of its own: five towers, and tower 3 holds box 3')
+
+            # And a tower opens on its boxes. No one photographs the inside of a tower, so it is
+            # divided up instead: ten boxes, drawn and named by the map itself.
+            boxes = m.post(f'/map/api/places/{towers[3]}/inside/grid',
+                           {'name': 'Boxes', 'rows': 10, 'cols': 1, 'kind': 'box', 'prefix': 'Box'})['map']
+            third = next((p for p in boxes['places'] if p['name'] == 'Box 3'), None)
+            if third:
+                m.put(f'/map/api/places/{third["id"]}', {'match': 'box 3'})
+                # The glycerol stocks point at the box itself, so Lab Stocks shows a link that opens
+                # the map on it; from there the way back out says which tower, freezer and floor.
+                for code in (self.ids.get('g1'), self.ids.get('g2'), self.ids.get('g3')):
+                    if code:
+                        m.put(f'/stocks/api/glycerol/{code}', {'place_id': third['id']})
+            say('and tower 3 opens on its ten boxes, box 3 holding the glycerol stocks')
 
         # Not every machine is labelled on a drawing: this one is drawn on by hand, and booked from here.
         if self.ids.get('pcr_resource'):
