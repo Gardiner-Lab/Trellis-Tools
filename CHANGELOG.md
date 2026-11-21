@@ -8,6 +8,17 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.62.1] - 2026-11-21
+The teaching demo fills the Lab Map, which it left empty before.
+
+- **A floor plan to try Lab Map on.** `demo/demo.sh load` now uploads an example equipment drawing of
+  a second floor, the way a lab admin would. Lab Map reads its labels (KK, VR (-80), -20, Kast, FC,
+  BSC, INC, IJS) with the outline round each and offers them, and the demo accepts all 15 across
+  three rooms. Four are given the words that find what Lab Stocks keeps in them, so the −80 freezer
+  lists the demo's glycerol stocks and the poison cabinet its Basta; the PCR machine, which no
+  drawing labels, is drawn on by hand and linked to its calendar in Booking. `demo.sh reset` clears
+  the maps with everything else. The plan is an example, not a real building.
+
 ## [2.62.0] - 2026-11-21
 Pins Sequence Editor 0.29.1, MoClo Library Tool 1.24.0 and Lab Notebook 0.31.0.
 
