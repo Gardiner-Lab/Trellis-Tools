@@ -8,6 +8,20 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.62.0] - 2026-11-21
+Pins Sequence Editor 0.29.1, MoClo Library Tool 1.24.0 and Lab Notebook 0.31.0.
+
+- **The MoClo protocol follows the lab's SOP** in both the MoClo Library Tool and the Lab Notebook:
+  10X rCutSmart buffer, 1 µL of T4 ligase (400 units), 1 µL of enzyme (20 units), a 1:3 vector-to-insert
+  ratio, and cycling of 37 °C 20 s, 30 cycles of 37 °C 5 min / 16 °C 5 min, then 37 °C 10 min,
+  50 °C 5 min, 80 °C 5 min and a 12 °C hold. The protocol supplied with the notebook is brought up to
+  date in place, unless a lab has changed its own copy.
+- **The reaction calculators refuse a mix that cannot be pipetted**, instead of showing a 0.00 µL line,
+  and say whether to make the reaction larger or to dilute the DNA.
+- **The Lab Notebook keeps formatting when notes are copied between pages**, links to plasmids, stocks
+  and notes included, and steps and table cells now take the same formatting as text.
+- **A simulated PCR names its primers** in the day's page it is added to, and links one from Lab Stocks.
+
 ## [2.61.1] - 2026-11-20
 Pins the file converter, Gotenberg, 8.40.0; pins Lab Map 0.1.1; pins lab-suite-portal and lab-suite-backup 2.61.1.
 
