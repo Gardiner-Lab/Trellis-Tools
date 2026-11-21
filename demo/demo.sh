@@ -43,7 +43,7 @@ accounts() {
 
 wipe() {
     echo "Removing the demo's data:"
-    for module in seeds:seeds stocks:stocks notebook:notebook booking:booking editor:editor moclo:moclo; do
+    for module in seeds:seeds stocks:stocks notebook:notebook booking:booking editor:editor moclo:moclo map:map; do
         docker compose exec -T "${module%%:*}" python - "${module#*:}" "$WHO" < "$here/wipe.py"
     done
 }

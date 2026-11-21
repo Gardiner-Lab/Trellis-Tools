@@ -81,6 +81,14 @@ and bookings fall in the current week.
 - **Booking**: a confocal microscope and a PCR machine (shared with the chair
   group) and a meeting room; bookings this week and next, with people tagged,
   and a weekly lab meeting. The partner books the microscope too.
+- **Lab Map**: the second floor's plan, as an equipment drawing whose labels
+  (KK, VR (-80), Kast, FC…) are read with the outline round each and accepted as
+  15 places in three rooms. The −80, the −20, a fridge and the poison cabinet are
+  given the words that find what Lab Stocks keeps in them, and the PCR machine is
+  drawn on by hand and linked to its calendar in Booking. The plan itself is
+  [data/demo-floor-plan.pdf](data/demo-floor-plan.pdf), drawn by
+  [data/make-floor-plan.py](data/make-floor-plan.py) (PyMuPDF) — an example, not a
+  real building.
 
 ## Resetting
 

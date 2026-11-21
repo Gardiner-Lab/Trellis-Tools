@@ -87,6 +87,12 @@ def table(title: str, columns, rows) -> dict:
 SITES = ('GGTCTC', 'GAGACC', 'GAAGAC', 'GTCTTC', 'CGTCTC', 'GAGACG')   # BsaI, BpiI, BsmBI, both strands
 
 
+def data_file(filename: str) -> bytes:
+    """A file shipped with the demo (demo/data)."""
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', filename), 'rb') as f:
+        return f.read()
+
+
 def kit_cassette(filename: str) -> str:
     """The part in a MoClo kit plasmid (demo/data): the stretch between its two BsaI sites, overhangs included."""
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', filename), encoding='utf-8') as f:
@@ -486,6 +492,8 @@ class Demo:
                       'description': 'Projector, whiteboard, 10 seats.', 'colour': '#7a4a8f', 'capacity': 10}):
             r = b.post('/booking/api/resources', {**data, 'owner_lab_id': lab})
             made[data['name']] = (r.get('resource') or r)['id']
+        # The Lab Map marks the PCR machine on the floor plan and links it to its calendar.
+        self.ids['pcr_resource'] = made['PCR machine (Bio-Rad C1000)']
         say('Booking: a confocal microscope, a PCR machine and a meeting room (shared with the chair group)')
         confocal, pcr, room = made.values()
         bookings = [
@@ -504,6 +512,49 @@ class Demo:
             except SuiteError as exc:
                 say(f'(booking skipped: {exc})')
         say(f'{len(bookings)} bookings this week and the next: microscope, PCR, weekly lab meeting (people tagged)')
+
+    # --- Lab Map ------------------------------------------------------------------------
+
+    def map(self):
+        """
+        The lab's floor plan, as a lab admin uploads it: an equipment drawing whose labels
+        (KK, VR (-80), Kast, FC…) Lab Map reads with the outline round each and offers as
+        places to accept. The storage places are then given the words that find what is kept
+        in them in Lab Stocks, and the PCR machine is marked by hand and linked to its calendar.
+        """
+        m = self.demo
+        lab = m.get('/map/api/me')['admin_labs'][0]['id']
+        made = m.post('/map/api/maps', files=[('file', 'demo-floor-plan.pdf',
+                                               data_file('demo-floor-plan.pdf'), 'application/pdf')],
+                      form={'lab_id': lab, 'name': 'Second floor'})['map']
+        suggested = made.get('suggestions') or []
+        say(f'Lab Map: the second floor\'s plan, with {len(suggested)} places read from its labels')
+        made = m.post(f'/map/api/maps/{made["id"]}/suggestions', {'ids': [s['id'] for s in suggested]})['map']
+        places = made.get('places') or []
+
+        # What the demo's stocks say about where they are kept, so clicking a place lists them.
+        wanted = {
+            ('-80 °C freezer', 'Cold storage'): ('−80 °C freezer 1', '−80 °C freezer 1'),
+            ('-20 °C freezer', 'Lab 2.12'): ('−20 °C freezer', '−20 °C box P1'),
+            ('Fridge', 'Lab 2.12'): ('Fridge 1', 'Lab 2.12, fridge 1'),
+            ('Cabinet', 'Lab 2.12'): ('Poison cabinet', 'poison cabinet'),
+        }
+        done = set()
+        for place in places:
+            key = (place['name'], (place.get('room') or '').split(' (')[0])
+            if key in wanted and key not in done:
+                name, match = wanted[key]
+                m.put(f'/map/api/places/{place["id"]}', {'name': name, 'match': match})
+                done.add(key)
+        say(f'{len(done)} of them given the words that find their stocks: the −80, the −20, a fridge, the poison cabinet')
+
+        # Not every machine is labelled on a drawing: this one is drawn on by hand, and booked from here.
+        if self.ids.get('pcr_resource'):
+            m.post(f'/map/api/maps/{made["id"]}/places', {
+                'kind': 'equipment', 'name': 'PCR machine (Bio-Rad C1000)', 'room': 'Lab 2.12 (02.2.012)',
+                'resource_id': self.ids['pcr_resource'], 'notes': 'Drawn on by hand: the plan does not label it.',
+                'shape': {'rect': [0.300, 0.555, 0.072, 0.085]}})
+            say('the PCR machine drawn on by hand and linked to its calendar in Booking')
 
     # --- Lab Notebook -------------------------------------------------------------------
 
@@ -584,7 +635,8 @@ class Demo:
         self.ids.update(protocol=protocol['id'], dip=dip['id'])
 
     def run(self, only=None):
-        for name in ('moclo', 'editor', 'stocks', 'crispr', 'seeds', 'partner_seeds', 'partner_stocks', 'booking', 'notebook'):
+        for name in ('moclo', 'editor', 'stocks', 'crispr', 'seeds', 'partner_seeds', 'partner_stocks', 'booking',
+                     'map', 'notebook'):
             if only and name not in only:
                 continue
             print(f'{name.replace("_", " ").title()}:', flush=True)

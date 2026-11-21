@@ -15,6 +15,7 @@ nothing else: run inside that module's container by demo/demo.sh reset, as
               feature lists, workspaces
     moclo     the demo accounts' cassettes, plasmids, backbones and saved items, and
               parts they added to the library; never MoClo's own "DEMO ..." library
+    map       the demo labs' floor plans, the places marked on them and the drawings
 
 The accounts, labs and chair group stay (demo/accounts.py makes them).
 """
@@ -116,6 +117,13 @@ def booking(conn):
     drop(conn, 'resources', 'id', resources)
 
 
+def map(conn):          # noqa: A001  (named for its module, as every function here is)
+    maps = ids(conn, f'SELECT id FROM maps WHERE lab_id IN ({marks(LAB_IDS)})', LAB_IDS)
+    drop(conn, 'places', 'map_id', maps)
+    drop(conn, 'drawings', 'map_id', maps)
+    drop(conn, 'maps', 'id', maps)
+
+
 def editor(conn):
     sequences = ids(conn, f'SELECT id FROM sequences WHERE owner_id IN ({marks(USER_IDS)})', USER_IDS)
     drop(conn, 'reads', 'sequence_id', sequences)
@@ -143,7 +151,8 @@ def moclo(conn):
 
 PATHS = {'seeds': ('SEEDS_DATABASE_PATH', '/seeds/seeds.db'), 'stocks': ('STOCKS_DATABASE_PATH', '/stocks/stocks.db'),
          'notebook': ('NOTEBOOK_DATABASE_PATH', '/notebook/notebook.db'), 'booking': ('BOOKING_DATABASE_PATH', '/booking/booking.db'),
-         'editor': ('EDITOR_DATABASE_PATH', '/data/plasmid_editor.db'), 'moclo': ('DATABASE_PATH', '/data/moclo.db')}
+         'editor': ('EDITOR_DATABASE_PATH', '/data/plasmid_editor.db'), 'moclo': ('DATABASE_PATH', '/data/moclo.db'),
+         'map': ('MAP_DATABASE_PATH', '/map/map.db')}
 
 if __name__ == '__main__':
     env, default = PATHS[MODULE]
