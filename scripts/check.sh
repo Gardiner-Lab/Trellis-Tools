@@ -29,9 +29,17 @@ fail=0
 # Every request trusts the lab's authority, or, with a university certificate
 # (certs/.provided), the computer's own trusted ones.
 CA="$ROOT/certs/lab-suite-ca.crt"
-curl() {
-  if [[ -f "$CA" && ! -f "$ROOT/certs/.provided" ]]; then command curl --cacert "$CA" "$@"; else command curl "$@"; fi
-}
+# On Windows (Git Bash) curl uses Schannel, which also asks for the
+# certificate's revocation status. The lab's own authority publishes no
+# revocation list, so that question can never be answered and every request
+# fails (CERT_TRUST_REVOCATION_STATUS_UNKNOWN). The certificate is still checked
+# against the lab's authority; only the revocation lookup is skipped.
+CA_OPTS=()
+if [[ -f "$CA" && ! -f "$ROOT/certs/.provided" ]]; then
+  CA_OPTS=(--cacert "$CA")
+  command curl --version 2>/dev/null | grep -qi schannel && CA_OPTS+=(--ssl-no-revoke)
+fi
+curl() { command curl "${CA_OPTS[@]}" "$@"; }
 
 ok()  { printf '  \033[32mok\033[0m   %-18s %s\n' "$1" "$2"; }
 bad() { printf '  \033[31mFAIL\033[0m %-18s %s\n' "$1" "$2"; fail=1; }
