@@ -553,7 +553,7 @@ class Demo:
             m.post(f'/map/api/maps/{made["id"]}/places', {
                 'kind': 'equipment', 'name': 'PCR machine (Bio-Rad C1000)', 'room': 'Lab 2.12 (02.2.012)',
                 'resource_id': self.ids['pcr_resource'], 'notes': 'Drawn on by hand: the plan does not label it.',
-                'shape': {'rect': [0.300, 0.555, 0.072, 0.085]}})
+                'shape': {'rect': [0.3064, 0.1489, 0.0499, 0.1277]}})
             say('the PCR machine drawn on by hand and linked to its calendar in Booking')
 
     # --- Lab Notebook -------------------------------------------------------------------
