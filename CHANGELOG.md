@@ -8,6 +8,25 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.63.0] - 2026-11-21
+Pins Lab Map 0.4.0 and Lab Stocks 0.25.0.
+
+- **The map goes inside the freezer.** A freezer, fridge, cold room, cabinet, shelf or rack can have a map
+  of what is in it, as deep as a lab needs: a freezer of towers, a tower of boxes, a box of positions.
+  Say how many it holds and the drawing is made for you, each one named and ready — a −80 starts as five
+  towers side by side, a fridge as five shelves stacked, a box as a 9 × 9 grid — or upload a photograph of
+  it with the door open and draw them on yourself. Clicking the freezer on the floor plan opens it, and a
+  line above the map leads back out through the tower and the freezer to the floor.
+- **A stock's place points at the box, not just the freezer.** Lab Stocks offers those towers, shelves and
+  boxes in <b>Place on the Lab Map</b>, grouped by the way down to them so one tower's "Box 3" is not
+  confused with the next one's. Its 📍 link opens the map right on that box, and the breadcrumb leads back
+  out — so someone who has never opened that freezer can still find the tube.
+- **Anyone in the lab draws its maps now**, not only its lab admins: the people who know where things are
+  kept are the ones at the bench. Removing stays narrower — a map or a place goes only at the hand of
+  whoever added it, one of the lab's lab admins, or an administrator.
+- **The teaching demo shows all of it**: the −80 opens on its five towers, tower 3 on its ten boxes, and
+  the demo's glycerol stocks link to box 3.
+
 ## [2.62.1] - 2026-11-21
 The teaching demo fills the Lab Map, which it left empty before.
 
