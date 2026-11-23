@@ -8,7 +8,15 @@ before using it for real, or for teaching a class.
 make demo          # or demo/demo.sh load: make the accounts and labs, fill them
 make demo-reset    # remove the demo's data and fill it again, e.g. before a class
 make demo-wipe     # remove the demo's data and leave it empty
+
+demo/demo.sh add map cloning   # run single steps on a demo that already has data
 ```
+
+`add` is for a demo loaded before a release that fills in something new: it runs
+only the steps named, leaving everything else as it is, where `load` refuses a
+demo that already has data and `reset` would empty it first. The steps are
+`moclo editor cloning stocks crispr seeds partner_seeds partner_stocks booking
+map notebook`.
 
 Run them on the server, in the suite's folder, with the suite running. They
 need Docker (as for the suite) and Python 3, nothing else.

@@ -3,9 +3,12 @@
 # in every module (demo/README.md). Run from anywhere, on the server, with the
 # suite running:
 #
-#   demo/demo.sh load     make the accounts and labs (if need be) and fill them
-#   demo/demo.sh reset    remove the demo's data, then fill it again (before a class)
-#   demo/demo.sh wipe     remove the demo's data, and leave it empty
+#   demo/demo.sh load         make the accounts and labs (if need be) and fill them
+#   demo/demo.sh reset        remove the demo's data, then fill it again (before a class)
+#   demo/demo.sh wipe         remove the demo's data, and leave it empty
+#   demo/demo.sh add STEP...  run single steps on a demo that already has data, for what a
+#                             newer release fills in (moclo editor cloning stocks crispr seeds
+#                             partner_seeds partner_stocks booking map notebook)
 #
 #   DEMO_PASSWORD=...        the accounts' password (default trellis-demo)
 #   DEMO_SHOW_ON_LOGIN=1     offer the demo login on the sign-in page
@@ -49,12 +52,16 @@ wipe() {
 }
 
 load() {
-    "$python" "$here/load.py" --url "$SUITE_URL" ${DEMO_PASSWORD:+--password "$DEMO_PASSWORD"} "${insecure[@]}"
+    "$python" "$here/load.py" --url "$SUITE_URL" ${DEMO_PASSWORD:+--password "$DEMO_PASSWORD"} "${insecure[@]}" "$@"
 }
 
 case "$action" in
     load) accounts; load ;;
     reset) accounts; wipe; load ;;
     wipe) accounts; wipe ;;
-    *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+    add)
+        shift
+        [ "$#" -gt 0 ] || { echo "Which step? e.g. demo/demo.sh add map cloning"; exit 1; }
+        accounts; load --only "$@" ;;
+    *) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

@@ -8,6 +8,29 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.65.0] - 2026-11-23
+Pins MoClo Library Tool 1.24.2.
+
+- **The teaching demo has something for each of the Sequence Editor's cloning tools.** The demo's
+  own work is all Golden Gate, so Gibson, restriction and ligation, and Gateway had nothing to open.
+  Each now has a worked set waiting: three fragments that close into one circle, a vector with a
+  stuffer and an insert cut by the same two enzymes, and an entry clone with a destination vector
+  for an LR reaction — every one of them checked to assemble, not just to look right. A Golden Gate
+  set is there too for anyone who has not loaded the MoClo library. The sequences are invented, made
+  from a fixed seed so every demo is the same, and are nobody's real construct.
+- **And something to align.** A plasmid with four Sanger reads of three colonies: one clone clean on
+  both strands, one with a changed base, one with a base missing — so a class can see what each
+  answer looks like, rather than only a clean one.
+- **A demo can be given what a newer release fills in, without being emptied first.**
+  `demo/demo.sh add <step>` runs single steps on a demo that already has data, where `load` refuses
+  it and `reset` would clear everything. A demo loaded before 2.62.1, whose Lab Map is empty, takes
+  its floor plan with `demo/demo.sh add map`.
+- **A part uploaded from a plasmid is drawn from its own features.** A 524 bp part carrying its
+  source plasmid's annotation was drawn from the backbone's features, which at the part's scale
+  landed off the edge of the picture — so the part looked blank. A feature's type is also recognised
+  however the file writes it (`Promoter`, `Misc._feature`, `5'_UTR`), which is what made the part's
+  own promoter be passed over in the first place.
+
 ## [2.64.0] - 2026-11-23
 Pins MoClo Library Tool 1.24.1, Lab Notebook 0.32.0 and Lab Stocks 0.26.0.
 

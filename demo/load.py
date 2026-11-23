@@ -15,6 +15,12 @@ Arabidopsis.
                   kit's pICSL70004 in demo/data), into the editor and Lab Stocks
     Plasmid Ed.   both plasmids, linked to MoClo; sequencing reads on the Level 1
                   plasmid, checked and confirmed; a home-made gel ladder; an enzyme list
+    Cloning       a worked set for each of the editor's other cloning tools, which the
+                  demo's own Golden Gate work leaves nothing to open: three Gibson
+                  fragments, a vector and insert for restriction and ligation, an entry
+                  clone and a destination vector for a Gateway LR; and a plasmid with
+                  four Sanger reads, one clone clean, one with a changed base, one with
+                  a base missing
     Lab Stocks    glycerol stocks of the plasmids (E. coli and Agrobacterium),
                   primers, chemicals (one run out), antibodies, leaf samples, orders
     Seed Bank     places; Col-0 from a stock centre, dipped; T1 selection on Basta;
@@ -85,6 +91,31 @@ def table(title: str, columns, rows) -> dict:
 
 
 SITES = ('GGTCTC', 'GAGACC', 'GAAGAC', 'GTCTTC', 'CGTCTC', 'GAGACG')   # BsaI, BpiI, BsmBI, both strands
+
+# Filler for the cloning sets must carry none of the sites those sets are cut with, or a
+# chance site cuts the vector in the wrong place and the worked example stops working.
+CUT_FREE = SITES + ('GAATTC', 'AAGCTT')                                # and EcoRI, HindIII
+
+
+def filler(n: int, rng) -> str:
+    """n bases of reproducible filler with no site any cloning tool in the demo cuts with."""
+    out = ''
+    while len(out) < n:
+        piece = ''.join(rng.choice('ACGT') for _ in range(30))
+        if not any(s in piece for s in CUT_FREE):
+            out += piece
+    return out[:n]
+
+
+def reading_frame(codons: int, rng) -> str:
+    """A reproducible open reading frame, so a demo sequence translates as a protein."""
+    sense = [a + b + c for a in 'ACGT' for b in 'ACGT' for c in 'ACGT' if a + b + c not in ('TAA', 'TAG', 'TGA')]
+    cds = 'ATG'
+    while len(cds) < 3 * (codons - 1):
+        codon = rng.choice(sense)
+        if not any(s in cds[-5:] + codon for s in CUT_FREE):
+            cds += codon
+    return cds + 'TAA'
 
 
 def data_file(filename: str) -> bytes:
@@ -214,6 +245,108 @@ class Demo:
             say('an enzyme list')
         except SuiteError as exc:
             say(f'(no enzyme list: {exc})')
+
+    # --- Sequence Editor: something to try each cloning tool on ---------------------------
+
+    def cloning(self):
+        """
+        The demo's own work is all Golden Gate, so the editor's other cloning tools have
+        nothing to open. This puts a worked set in front of each one -- Gibson, restriction
+        and ligation, Gateway LR, and a Golden Gate set that does not need the MoClo library
+        -- and a plasmid with four Sanger reads to align, each read showing a different answer.
+
+        The sequences are made here rather than shipped as files, from a fixed seed, so every
+        demo is identical and nothing in them is anyone's real construct.
+        """
+        import random
+
+        def put(name, seq, circular=False, features=None, description=''):
+            doc = {'name': name, 'sequence': seq, 'circular': circular,
+                   'description': description, 'features': features or []}
+            return self.demo.post('/editor/api/sequences', {'document': doc})['sequence']['id']
+
+        # Gibson: three fragments that close into one circle, overlapping by 30 bp.
+        rng = random.Random(101)
+        backbone, promoter, cds = filler(2200, rng), filler(800, rng), reading_frame(240, rng)
+        full = backbone + promoter + cds
+        o = 30
+        for label, piece in (
+                ('1 of 3: vector backbone', full[:len(backbone) + o]),
+                ('2 of 3: AtUBQ10 promoter', full[len(backbone):len(backbone) + len(promoter) + o]),
+                ('3 of 3: tRFP coding sequence', full[len(backbone) + len(promoter):] + full[:o])):
+            put(f'Gibson {label}', piece,
+                description='One of three fragments with 30 bp overlaps. Gibson Assembly closes them '
+                            f'into a {len(full)} bp circle.')
+        say(f'Gibson: three fragments that close into a {len(full)} bp circle')
+
+        # Restriction and ligation: a vector and an insert that EcoRI and HindIII both cut twice.
+        rng = random.Random(202)
+        vector = filler(1500, rng) + 'GAATTC' + filler(20, rng) + 'AAGCTT' + filler(1400, rng)
+        insert = filler(60, rng) + 'GAATTC' + reading_frame(220, rng) + 'AAGCTT' + filler(60, rng)
+        put('Ligation: pDEMO-MCS vector (EcoRI + HindIII)', vector, circular=True,
+            description='Cut with EcoRI and HindIII, the 20 bp stuffer comes out and the backbone takes the insert.')
+        put('Ligation: tRFP insert (EcoRI + HindIII)', insert,
+            description='A PCR product with an EcoRI site at one end and HindIII at the other.')
+        say('restriction and ligation: a vector with a stuffer, and an insert cut by the same two enzymes')
+
+        # Gateway LR: an entry clone and a destination vector, their att sites annotated.
+        rng = random.Random(303)
+        core1, core2 = 'ACAAGTTTGTACAAAAAAGCAGGCT', 'ACCCAGCTTTCTTGTACAAAGTGGT'
+        l_arm, r_arm = filler(70, rng), filler(90, rng)
+        gene, entry_bb = reading_frame(260, rng), filler(1800, rng)
+        ccdb, dest_bb = filler(1500, rng), filler(2600, rng)
+        entry = l_arm + core1 + gene + core2 + l_arm + entry_bb
+        dest = core1 + r_arm + ccdb + r_arm + core2 + dest_bb
+
+        def at(seq, piece, label, kind='protein_bind'):
+            start = seq.index(piece)
+            return {'name': label, 'type': kind, 'start': start, 'end': start + len(piece), 'strand': 1}
+
+        put('Gateway: pENTR-tRFP entry clone (attL1/attL2)', entry, circular=True,
+            features=[at(entry, core1, 'attL1'), at(entry, core2, 'attL2'), at(entry, gene, 'tRFP', 'CDS')],
+            description='The entry clone of an LR reaction: attL1 and attL2 either side of the gene.')
+        put('Gateway: pDEMO-DEST destination vector (attR1/attR2)', dest, circular=True,
+            features=[at(dest, core1, 'attR1'), at(dest, core2, 'attR2'), at(dest, ccdb, 'ccdB', 'CDS')],
+            description='The destination vector: LR swaps its ccdB cassette for the gene.')
+        say('Gateway: an entry clone and a destination vector, for an LR reaction')
+
+        # Golden Gate without the MoClo library: three BsaI parts and their acceptor.
+        rng = random.Random(404)
+        f, r = 'GGTCTCA', 'TGAGACC'
+        oh = ['AATG', 'AGGT', 'GCTT']
+        gg_prom, gg_cds, gg_bb = filler(600, rng), reading_frame(200, rng), filler(2000, rng)
+        for label, piece in (
+                ('part 1 of 3: AtUBQ10 promoter (AATG/AGGT)',
+                 filler(25, rng) + f + oh[0] + gg_prom + oh[1] + r + filler(25, rng)),
+                ('part 2 of 3: tRFP coding sequence (AGGT/GCTT)',
+                 filler(25, rng) + f + oh[1] + gg_cds + oh[2] + r + filler(25, rng)),
+                ('part 3 of 3: acceptor backbone (GCTT/AATG)',
+                 oh[0] + r + filler(400, rng) + f + oh[2] + gg_bb)):
+            put(f'Golden Gate {label}', piece, circular=label.startswith('part 3'),
+                description='Cut with BsaI, the three parts join in one order only, by their 4 bp overhangs.')
+        say('Golden Gate: three BsaI parts that need no MoClo library')
+
+        # Sequencing: one plasmid, four reads, each with a different answer in it.
+        rng = random.Random(505)
+        ref_cds = reading_frame(300, rng)
+        plasmid = filler(900, rng) + ref_cds + filler(900, rng)
+        start = plasmid.index(ref_cds)
+        forward, reverse = plasmid[start - 80:start + 700], plasmid[start + 200:start + 980]
+        swap = {'A': 'G', 'C': 'T', 'G': 'A', 'T': 'C'}
+        changed = list(forward)
+        changed[300] = swap[changed[300]]
+        ref_id = put('pDEMO-tRFP, for checking by sequencing', plasmid, circular=True,
+                     features=[{'name': 'tRFP', 'type': 'CDS', 'start': start,
+                                'end': start + len(ref_cds), 'strand': 1}],
+                     description='Four Sanger reads of three colonies are aligned to this: one clone is '
+                                 'clean, one has a changed base, one has a base missing.')
+        fasta = (f'>clone1_UBQ10-F\n{forward}\n>clone1_tRFP-R\n{reverse}\n'
+                 f'>clone2_UBQ10-F\n{"".join(changed)}\n'
+                 f'>clone3_UBQ10-F\n{forward[:420] + forward[421:]}\n').encode()
+        reads = self.demo.post(f'/editor/api/sequences/{ref_id}/reads',
+                               files=[('file', 'demo_colony_reads.fasta', fasta, 'text/plain')])['reads']
+        say(f'sequencing: a plasmid with {len(reads)} reads aligned -- a clean clone, a changed base, '
+            f'a base missing')
 
     # --- Lab Stocks -----------------------------------------------------------------------
 
@@ -524,6 +657,16 @@ class Demo:
         """
         m = self.demo
         lab = m.get('/map/api/me')['admin_labs'][0]['id']
+        # Run on its own (demo/demo.sh add map), the earlier steps have not filled self.ids in
+        # this process: the stocks and the PCR machine are already there, so look them up.
+        if not self.ids.get('g1'):
+            kept = [s for s in m.get('/stocks/api/glycerol')['glycerol'] if 'box 3' in (s.get('location') or '')]
+            self.ids.update({f'g{i + 1}': s['code'] for i, s in enumerate(kept[:3])})
+        if not self.ids.get('pcr_resource'):
+            pcr = next((r for r in m.get('/booking/api/resources')['resources']
+                        if r['name'].startswith('PCR machine')), None)
+            if pcr:
+                self.ids['pcr_resource'] = pcr['id']
         made = m.post('/map/api/maps', files=[('file', 'demo-floor-plan.pdf',
                                                data_file('demo-floor-plan.pdf'), 'application/pdf')],
                       form={'lab_id': lab, 'name': 'Second floor'})['map']
@@ -672,9 +815,11 @@ class Demo:
                  f'{link("seed", i["f1"], i["f1"])}.</p>')]})
         self.ids.update(protocol=protocol['id'], dip=dip['id'])
 
+    STEPS = ('moclo', 'editor', 'cloning', 'stocks', 'crispr', 'seeds', 'partner_seeds', 'partner_stocks',
+             'booking', 'map', 'notebook')
+
     def run(self, only=None):
-        for name in ('moclo', 'editor', 'stocks', 'crispr', 'seeds', 'partner_seeds', 'partner_stocks', 'booking',
-                     'map', 'notebook'):
+        for name in self.STEPS:
             if only and name not in only:
                 continue
             print(f'{name.replace("_", " ").title()}:', flush=True)
@@ -688,13 +833,19 @@ def main():
     parser.add_argument('--url', default=os.environ.get('SUITE_URL', 'https://localhost:8080'))
     parser.add_argument('--password', default=os.environ.get('DEMO_PASSWORD', 'trellis-demo'))
     parser.add_argument('--insecure', action='store_true', help="don't check the certificate (a local install's own)")
+    parser.add_argument('--only', metavar='STEP', nargs='+', choices=Demo.STEPS,
+                        help='run only these steps, on a demo that already has data: '
+                             + ', '.join(Demo.STEPS) + '. For adding what a newer release filled in '
+                             'to a demo loaded before it, without wiping the rest.')
     args = parser.parse_args()
     verify = not args.insecure
     demo = Suite(args.url, verify).sign_in('demo', args.password)
     partner = Suite(args.url, verify).sign_in('demo-partner', args.password)
-    if demo.get('/seeds/api/lines')['lines'] or demo.get('/editor/api/sequences?mine=1').get('sequences'):
-        sys.exit('The demo already has data: reset it first (demo/demo.sh reset).')
-    Demo(demo, partner).run()
+    filled = demo.get('/seeds/api/lines')['lines'] or demo.get('/editor/api/sequences?mine=1').get('sequences')
+    if filled and not args.only:
+        sys.exit('The demo already has data: reset it first (demo/demo.sh reset), '
+                 'or add single steps with --only (demo/demo.sh add <step>...).')
+    Demo(demo, partner).run(only=args.only)
     print(f'Done. Sign in at {args.url} as demo (password {args.password}).')
 
 
