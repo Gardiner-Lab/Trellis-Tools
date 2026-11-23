@@ -8,6 +8,31 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.64.0] - 2026-11-23
+Pins MoClo Library Tool 1.24.1, Lab Notebook 0.32.0 and Lab Stocks 0.26.0.
+
+- **A photograph can be 50 MB, where it was 25 MB**, whether it goes on a day's page in the Lab
+  Notebook or on a stock in Lab Stocks. A picture straight off a microscope or a phone often passes
+  25 MB and had to be shrunk first. One upload as a whole now carries 128 MB, so several such photos
+  still go up together, and the proxy in front of the tools allows the same — on the notebook it
+  allowed only 64 MB, so a large photo was refused before the notebook ever saw it.
+- **A part's diagram shows its blocks again.** They were drawn and then faded in by an animation that
+  hid them in a way it could not undo, so opening a part showed its labels in white on a white
+  background. The diagram is also left standing, as drawn, when the animation library cannot be
+  fetched at all.
+- **A CRISPR guide module has a diagram.** Only promoters, coding sequences, terminators and introns
+  were ever drawn, and a guide module is none of those — a tRNA, a protospacer and a scaffold — so it
+  said it had nothing to show. It is drawn from what it has now: the tRNA purple, the scaffold teal,
+  and the protospacer, the one piece that differs between guides, orange. The 4 bp fusion sites are
+  thin markers across the blocks they sit in, pointing at a block names it with its position, and a
+  module whose features sit in a short stretch of a long part is drawn at that stretch, which the
+  scale says as `278 bp (of 2035)`.
+- **A feature's type badge can be read**, instead of white text on a transparent background for any
+  type without a colour of its own.
+- **The buttons above a part or a backbone sit in a row of their own**, below the title, all the same
+  height, wrapping together on a narrow window, where before a long part name squeezed them to
+  different widths and pushed them off the edge.
+
 ## [2.63.0] - 2026-11-21
 Pins Lab Map 0.4.0 and Lab Stocks 0.25.0.
 
