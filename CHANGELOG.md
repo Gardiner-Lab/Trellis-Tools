@@ -8,6 +8,21 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.66.0] - 2026-11-24
+Pins Lab Notebook 0.33.0.
+
+- **Meetings in the Lab Notebook, once or repeating.** Every week, every two or four weeks, or
+  monthly on the same weekday. Each date gets a page under the day of the organiser and of everyone
+  invited (anyone in Trellis Tools), shared with them to take notes on: agenda, attendance, notes
+  and action items. Only the organiser changes the meeting. Action items not ticked off go on to
+  the next meeting, marked with the meeting they came from.
+- **A Meetings tab:** your week of meetings on a schedule, as in the Booking tool.
+- **Projects, with a Gantt chart.** A new Projects tab: work packages, tasks and subtasks, members
+  who all plan together, tasks that wait for others and move when what they wait for finishes
+  earlier or later, and a Gantt chart that exports as a PDF (with a table of the tasks), a PNG or
+  an SVG. Each task is a page for its notes, with @ links to protocols and stocks. Put a task on a
+  meeting's agenda or a notebook day, and what is written under it shows on the task.
+
 ## [2.65.0] - 2026-11-23
 Pins MoClo Library Tool 1.24.2.
 
