@@ -8,6 +8,14 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.68.1] - 2026-11-24
+Pins Lab Notebook 0.35.1.
+
+- **The Lab Notebook's black formatting bar no longer goes missing.** Moving from one text box
+  straight into another hid it, and it stayed hidden until you clicked outside and back in. It now
+  stays, and sits just above the line you are writing on rather than above the top of the box,
+  which in a long box could be off the screen. Reported by the lab.
+
 ## [2.68.0] - 2026-11-24
 Pins Lab Notebook 0.35.0.
 
