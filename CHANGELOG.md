@@ -8,6 +8,13 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.68.0] - 2026-11-24
+Pins Lab Notebook 0.35.0.
+
+- **A meeting's action item onto your week's to-do list.** In the Lab Notebook, **→ My to-do**
+  beside an action item puts it on your to-do list of this week, with a link back to the meeting.
+  The meeting's page shows whose lists each item is on, ticked once done there.
+
 ## [2.67.0] - 2026-11-24
 Pins Lab Notebook 0.34.0.
 
