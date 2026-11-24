@@ -39,7 +39,7 @@ from flask import Flask, jsonify, redirect, request, send_file, session
 import storage
 from storage import StorageError
 
-APP_VERSION = '2.66.0'
+APP_VERSION = '2.67.0'
 
 CONFIG_DIR = Path(os.environ.get('CONFIG_STORE', '/config-store'))
 SETTINGS_FILE = CONFIG_DIR / 'settings.json'

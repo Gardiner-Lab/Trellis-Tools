@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.67.0] - 2026-11-24
+Pins Lab Notebook 0.34.0.
+
+- **Tag a task with @ in the Lab Notebook.** Type @ anywhere you write - a day, a to-do list, a
+  meeting's action items, a table - and choose a task of one of your projects. The tag opens the
+  task, and the task's page lists where it was tagged, with the line it was tagged in.
+- **The @ window is easier to read:** what it links to is a grid of tiles of one size, each saying
+  where it lives.
+
 ## [2.66.0] - 2026-11-24
 Pins Lab Notebook 0.33.0.
 
