@@ -8,6 +8,16 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.71.0] - 2026-11-25
+Pins Lab Notebook 0.38.1.
+
+- **Everyone's own minutes and notes on a meeting's page.** In the Lab Notebook, each person writes
+  under each agenda point, and under Notes, in a box of their own with their name on it, so people
+  taking minutes at once never write over each other. Others' writing comes in by itself, and
+  saves made at once are put together instead of asking which to keep.
+- **Meetings at any hour**: the Meetings week runs from 00:00 to 24:00, opened at the week's meetings.
+- **The formatting bar no longer covers the lines above** the one being written: it sits above the box.
+
 ## [2.70.0] - 2026-11-25
 Pins Lab Notebook 0.37.0.
 
