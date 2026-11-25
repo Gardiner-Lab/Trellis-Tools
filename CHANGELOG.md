@@ -8,6 +8,12 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.71.1] - 2026-11-25
+Pins Lab Notebook 0.38.2.
+
+- **The Lab Notebook's formatting bar sits on the row of its tabs**, at the right: always in the
+  same place, over none of the text, greyed out when no text is being written in.
+
 ## [2.71.0] - 2026-11-25
 Pins Lab Notebook 0.38.1.
 
