@@ -8,6 +8,16 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.69.0] - 2026-11-25
+Pins Lab Notebook 0.36.0.
+
+- **Minutes under each agenda point.** On a meeting's page in the Lab Notebook, every point of the
+  agenda now has a box of its own for its minutes, and **＋ Agenda point** under the last one adds
+  another during the meeting. Pages already made keep their layout until the meeting is saved again
+  (those nobody has written on).
+- **Priorities go None → Low → Medium → High → None** when clicked, on action items and to-do lists,
+  and tasks with no priority sit at the bottom.
+
 ## [2.68.1] - 2026-11-24
 Pins Lab Notebook 0.35.1.
 
