@@ -8,6 +8,15 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.70.0] - 2026-11-25
+Pins Lab Notebook 0.37.0.
+
+- **Drag over the time on the Lab Notebook's Meetings tab to set up a meeting**, as in Booking;
+  it shows on the week as soon as it is saved.
+- **A calendar for a meeting's first and last date**; a date can still be typed.
+- One **＋ Agenda point** button per meeting page (a second one showed when a project's task came
+  straight after the Agenda heading).
+
 ## [2.69.0] - 2026-11-25
 Pins Lab Notebook 0.36.0.
 
