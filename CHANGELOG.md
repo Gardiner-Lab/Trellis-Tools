@@ -8,6 +8,18 @@ and the project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.72.0] - 2026-11-25
+Pins Lab Notebook 0.39.0.
+
+- **3D models and scans open in the Lab Notebook.** Attach a GLB, glTF, USDZ (an iPhone or iPad
+  scan) or PLY model, or a Gaussian splat (3DGS: PLY, SPZ, SPLAT, KSPLAT, SOG), and click it: it
+  opens in 3D over the page, to turn, move and zoom, and to stand up a scan that came in lying down.
+- **A video of it turning round**, from the view on the screen, saved as an MP4 at HD, square,
+  upright or 4K size, every frame drawn in turn; and a picture of the view as a PNG.
+- **A USDZ becomes a GLB**, with its textures, saved or attached to the page beside it.
+- **Search only your own notebook**: "Only my notebook" under the search box leaves out the protocol
+  library and the pages others share with you.
+
 ## [2.71.1] - 2026-11-25
 Pins Lab Notebook 0.38.2.
 
